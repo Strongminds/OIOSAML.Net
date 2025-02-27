@@ -409,7 +409,7 @@ namespace dk.nita.saml20.protocol
         {
             var tryDecryptAssertion = new Func<X509Certificate2, Saml20EncryptedAssertion>((certificate) =>
             {
-                Saml20EncryptedAssertion decryptedAssertion = new Saml20EncryptedAssertion((RSA)certificate.PrivateKey);
+                Saml20EncryptedAssertion decryptedAssertion = new Saml20EncryptedAssertion(certificate.GetRSAPrivateKey());
                 decryptedAssertion.LoadXml(elem);
                 decryptedAssertion.Decrypt();
                 return decryptedAssertion;

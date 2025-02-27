@@ -1,11 +1,15 @@
 using System;
 using System.IO;
+using System.Linq;
 using System.Security.Cryptography;
 using System.Security.Cryptography.Xml;
 using System.Text;
 using System.Xml;
 using dk.nita.saml20.Schema.Protocol;
 using dk.nita.saml20.Utils;
+using Org.BouncyCastle.Crypto.Engines;
+using Org.BouncyCastle.Crypto.Modes;
+using Org.BouncyCastle.Crypto.Parameters;
 using SfwEncryptedData = dk.nita.saml20.Schema.XEnc.EncryptedData;
 
 namespace dk.nita.saml20
@@ -15,12 +19,6 @@ namespace dk.nita.saml20
     /// </summary>
     public class Saml20EncryptedAssertion
     {
-        /// <summary>
-        /// Whether to use OAEP (Optimal Asymmetric Encryption Padding) by default, if no EncryptionMethod is specified 
-        /// on the &lt;EncryptedKey&gt; element.
-        /// </summary>
-        private const bool USE_OAEP_DEFAULT = false;
-
         /// <summary>
         /// The assertion that is stored within the encrypted assertion.
         /// </summary>
@@ -142,29 +140,25 @@ namespace dk.nita.saml20
             if (_encryptedAssertion == null)
                 throw new InvalidOperationException("Unable to find the <EncryptedAssertion> element. Use a constructor or the LoadXml - method to set it.");
 
+            // Get the <EncryptedData> element
             XmlElement encryptedDataElement = GetElement(SfwEncryptedData.ELEMENT_NAME, Saml20Constants.XENC, _encryptedAssertion.DocumentElement);
             EncryptedData encryptedData = new EncryptedData();
             encryptedData.LoadXml(encryptedDataElement);
 
+            // Extract and decrypt the session key using BouncyCastle
             SymmetricAlgorithm sessionKey;
             if (encryptedData.EncryptionMethod != null)
             {
                 _sessionKeyAlgorithm = encryptedData.EncryptionMethod.KeyAlgorithm;
-                sessionKey = ExtractSessionKey(_encryptedAssertion, encryptedData.EncryptionMethod.KeyAlgorithm);
+                sessionKey = ExtractSessionKeyWithBouncyCastle(_encryptedAssertion, encryptedData.EncryptionMethod.KeyAlgorithm);
             }
             else
             {
-                sessionKey = ExtractSessionKey(_encryptedAssertion);
+                sessionKey = ExtractSessionKeyWithBouncyCastle(_encryptedAssertion);
             }
 
-            /*
-             * NOTE: 
-             * The EncryptedXml class can't handle an <EncryptedData> element without an underlying <EncryptionMethod> element,
-             * despite the standard dictating that this is ok. 
-             * If this becomes a problem with other IDPs, consider adding a default EncryptionMethod instance manually before decrypting.
-             */
-            EncryptedXml encryptedXml = new EncryptedXml();
-            byte[] plaintext = encryptedXml.DecryptData(encryptedData, sessionKey);
+            // Decrypt the assertion using AES-GCM
+            byte[] plaintext = BouncyCastleHelper.DecryptAssertionWithAesGcm(encryptedData, sessionKey.Key);
 
             _assertion = new XmlDocument();
             _assertion.XmlResolver = null;
@@ -179,6 +173,51 @@ namespace dk.nita.saml20
                 _assertion = null;
                 throw new Saml20FormatException("Unable to parse the decrypted assertion.", e);
             }
+        }
+
+        private SymmetricAlgorithm ExtractSessionKeyWithBouncyCastle(XmlDocument encryptedAssertionDoc, string keyAlgorithm = "")
+        {
+            // Find <EncryptedKey> in the SAML response
+            XmlElement encryptedKeyElement = GetElement("EncryptedKey", Saml20Constants.XENC, encryptedAssertionDoc.DocumentElement);
+            if (encryptedKeyElement == null)
+                throw new Saml20FormatException("Unable to locate assertion decryption key.");
+
+            var encryptedKey = new EncryptedKey();
+            encryptedKey.LoadXml(encryptedKeyElement);
+
+            // Extract cipher value (encrypted AES key)
+            byte[] encryptedAesKey = encryptedKey.CipherData.CipherValue;
+
+            // Decrypt the AES key using BouncyCastle (RSA-OAEP-SHA256 + MGF1-SHA256)
+            byte[] aesKey = BouncyCastleHelper.DecryptKeyWithOaepSha256(encryptedAesKey, TransportKey);
+
+            // Create an AES instance and set the key
+            SymmetricAlgorithm aes = Aes.Create();
+            aes.KeySize = 256;
+            aes.Key = aesKey;
+
+            return aes;
+        }
+
+        private byte[] DecryptAssertionWithAesGcm(EncryptedData encryptedData, byte[] aesKey)
+        {
+            byte[] encryptedBytes = encryptedData.CipherData.CipherValue;
+
+            // Extract IV (first 12 bytes) and authentication tag (last 16 bytes)
+            byte[] iv = encryptedBytes.Take(12).ToArray();
+            byte[] cipherText = encryptedBytes.Skip(12).Take(encryptedBytes.Length - 28).ToArray();
+            byte[] authTag = encryptedBytes.Skip(encryptedBytes.Length - 16).ToArray();
+
+            // Use BouncyCastle's AES-GCM decryption
+            GcmBlockCipher cipher = new GcmBlockCipher(new AesEngine());
+            AeadParameters parameters = new AeadParameters(new KeyParameter(aesKey), 128, iv, null);
+            cipher.Init(false, parameters); // False for decryption
+
+            byte[] output = new byte[cipher.GetOutputSize(cipherText.Length)];
+            int len = cipher.ProcessBytes(cipherText, 0, cipherText.Length, output, 0);
+            cipher.DoFinal(output, len);
+
+            return output;
         }
 
         /// <summary>
@@ -229,22 +268,25 @@ namespace dk.nita.saml20
         /// <returns></returns>
         private SymmetricAlgorithm ToSymmetricKey(XmlElement encryptedKeyElement, string keyAlgorithm)
         {
-            EncryptedKey encryptedKey = new EncryptedKey();
+            var encryptedKey = new EncryptedKey();
             encryptedKey.LoadXml(encryptedKeyElement);
-
-            bool useOAEP = USE_OAEP_DEFAULT;
-            if (encryptedKey.EncryptionMethod != null)
-            {
-                if (encryptedKey.EncryptionMethod.KeyAlgorithm == EncryptedXml.XmlEncRSAOAEPUrl)
-                    useOAEP = true;
-                else
-                    useOAEP = false;
-            }
 
             if (encryptedKey.CipherData.CipherValue != null)
             {
-                SymmetricAlgorithm key = GetKeyInstance(keyAlgorithm);
-                key.Key = EncryptedXml.DecryptKey(encryptedKey.CipherData.CipherValue, TransportKey, useOAEP);
+                var key = GetKeyInstance(keyAlgorithm);
+                if (encryptedKey.EncryptionMethod.KeyAlgorithm == EncryptedXml.XmlEncRSAOAEPUrl)
+                {
+                    key.Key = EncryptedXml.DecryptKey(encryptedKey.CipherData.CipherValue, TransportKey, true);
+                }
+                else if (encryptedKey.EncryptionMethod.KeyAlgorithm.ToLower().Contains("oaep"))
+                {
+                    key.Key = BouncyCastleHelper.DecryptKeyWithOaepSha256(encryptedKey.CipherData.CipherValue, TransportKey);
+                }
+                else
+                {
+                    key.Key = EncryptedXml.DecryptKey(encryptedKey.CipherData.CipherValue, TransportKey, false); // PKCS#1
+                }
+
                 return key;
             }
 
