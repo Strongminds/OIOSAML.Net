@@ -158,7 +158,7 @@ namespace dk.nita.saml20
             }
 
             // Decrypt the assertion using AES-GCM
-            byte[] plaintext = BouncyCastleHelper.DecryptAssertionWithAesGcm(encryptedData, sessionKey.Key);
+            byte[] plaintext = BouncyCastleHelper.Decrypt(encryptedData, sessionKey.Key);
 
             _assertion = new XmlDocument();
             _assertion.XmlResolver = null;

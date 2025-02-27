@@ -317,7 +317,7 @@ namespace dk.nita.saml20.protocol
                 // Check if an encoding-override exists for the IdP endpoint in question
                 string issuer = GetIssuer(assertion);
                 IDPEndPoint endpoint = RetrieveIDPConfiguration(issuer);
-                if (!string.IsNullOrEmpty(endpoint.ResponseEncoding))
+                if (!string.IsNullOrEmpty(endpoint?.ResponseEncoding))
                 {
                     Encoding encodingOverride = null;
                     try

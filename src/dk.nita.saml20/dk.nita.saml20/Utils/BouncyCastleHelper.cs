@@ -54,14 +54,14 @@ namespace dk.nita.saml20.Utils
         /// <param name="encryptedData"></param>
         /// <param name="aesKey"></param>
         /// <returns></returns>
-        public static byte[] DecryptAssertionWithAesGcm(EncryptedData encryptedData, byte[] aesKey)
+        /*public static byte[] DecryptAssertionWithAesGcm(EncryptedData encryptedData, byte[] aesKey)
         {
             byte[] encryptedBytes = encryptedData.CipherData.CipherValue;
 
             // Adjust these lengths if your SAML response uses different sizes.
             int ivLength = 12;   // Commonly 12 bytes for AES-GCM
             int tagLength = 16;  // Commonly 16 bytes
-
+            
             if (encryptedBytes.Length < ivLength + tagLength)
                 throw new Exception("The encrypted data is too short to contain both an IV and an authentication tag.");
 
@@ -69,7 +69,7 @@ namespace dk.nita.saml20.Utils
             byte[] iv = encryptedBytes.Take(ivLength).ToArray();
             byte[] authTag = encryptedBytes.Skip(encryptedBytes.Length - tagLength).ToArray();
             byte[] cipherText = encryptedBytes.Skip(ivLength).Take(encryptedBytes.Length - ivLength - tagLength).ToArray();
-
+            
             // Debug logging
             Console.WriteLine("IV Length: " + iv.Length);
             Console.WriteLine("Ciphertext Length: " + cipherText.Length);
@@ -85,6 +85,34 @@ namespace dk.nita.saml20.Utils
             cipher.DoFinal(output, len);
 
             return output;
+        }*/
+        
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="encryptedData"></param>
+        /// <param name="key"></param>
+        /// <returns></returns>
+        public static byte[] Decrypt(EncryptedData encryptedData, byte[] key)
+        {
+            // Base64 decode encrypted data
+            var nonceCipherValue = encryptedData.CipherData.CipherValue;
+
+            // separate nonce and ciphertextTag
+            const int nonceSize = 12;
+            var nonce = new byte[nonceSize];
+            Array.Copy(nonceCipherValue, 0, nonce, 0, nonceSize);
+            var ciphertextTag = new byte[nonceCipherValue.Length - nonceSize];
+            Array.Copy(nonceCipherValue, nonceSize, ciphertextTag, 0, ciphertextTag.Length);
+
+            var gcmBlockCipher = new GcmBlockCipher(new AesEngine());
+            gcmBlockCipher.Init(false, new AeadParameters(new KeyParameter(key), 128, nonce));
+            var outputSizeDecryptedData = gcmBlockCipher.GetOutputSize(ciphertextTag.Length);
+            var decryptedData = new byte[outputSizeDecryptedData];
+            var processedBytes = gcmBlockCipher.ProcessBytes(ciphertextTag, 0, ciphertextTag.Length, decryptedData, 0);
+            gcmBlockCipher.DoFinal(decryptedData, processedBytes);
+
+            return decryptedData;
         }
     }
 }
