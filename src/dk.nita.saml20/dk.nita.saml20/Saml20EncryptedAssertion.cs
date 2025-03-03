@@ -158,7 +158,7 @@ namespace dk.nita.saml20
             }
 
             // Decrypt the assertion using AES-GCM
-            byte[] plaintext = BouncyCastleHelper.Decrypt(encryptedData, sessionKey.Key);
+            byte[] plaintext = DecryptionHelper.Decrypt(encryptedData, sessionKey.Key);
 
             _assertion = new XmlDocument();
             _assertion.XmlResolver = null;
@@ -189,7 +189,7 @@ namespace dk.nita.saml20
             byte[] encryptedAesKey = encryptedKey.CipherData.CipherValue;
 
             // Decrypt the AES key using BouncyCastle (RSA-OAEP-SHA256 + MGF1-SHA256)
-            byte[] aesKey = BouncyCastleHelper.DecryptKeyWithOaepSha256(encryptedAesKey, TransportKey);
+            byte[] aesKey = DecryptionHelper.DecryptKeyWithOaepSha256(encryptedAesKey, TransportKey);
 
             // Create an AES instance and set the key
             SymmetricAlgorithm aes = Aes.Create();
@@ -197,35 +197,6 @@ namespace dk.nita.saml20
             aes.Key = aesKey;
 
             return aes;
-        }
-
-        private byte[] DecryptAssertionWithAesGcm(EncryptedData encryptedData, byte[] aesKey)
-        {
-            byte[] encryptedBytes = encryptedData.CipherData.CipherValue;
-
-            // Extract IV (first 12 bytes) and authentication tag (last 16 bytes)
-            byte[] iv = encryptedBytes.Take(12).ToArray();
-            byte[] cipherText = encryptedBytes.Skip(12).Take(encryptedBytes.Length - 28).ToArray();
-            byte[] authTag = encryptedBytes.Skip(encryptedBytes.Length - 16).ToArray();
-
-            // Use BouncyCastle's AES-GCM decryption
-            GcmBlockCipher cipher = new GcmBlockCipher(new AesEngine());
-            AeadParameters parameters = new AeadParameters(new KeyParameter(aesKey), 128, iv, null);
-            cipher.Init(false, parameters); // False for decryption
-
-            byte[] output = new byte[cipher.GetOutputSize(cipherText.Length)];
-            int len = cipher.ProcessBytes(cipherText, 0, cipherText.Length, output, 0);
-            cipher.DoFinal(output, len);
-
-            return output;
-        }
-
-        /// <summary>
-        /// An overloaded version of ExtractSessionKey that does not require a keyAlgorithm.
-        /// </summary>
-        private SymmetricAlgorithm ExtractSessionKey(XmlDocument encryptedAssertionDoc)
-        {
-            return ExtractSessionKey(encryptedAssertionDoc, string.Empty);
         }
 
         /// <summary>
@@ -280,7 +251,7 @@ namespace dk.nita.saml20
                 }
                 else if (encryptedKey.EncryptionMethod.KeyAlgorithm.ToLower().Contains("oaep"))
                 {
-                    key.Key = BouncyCastleHelper.DecryptKeyWithOaepSha256(encryptedKey.CipherData.CipherValue, TransportKey);
+                    key.Key = DecryptionHelper.DecryptKeyWithOaepSha256(encryptedKey.CipherData.CipherValue, TransportKey);
                 }
                 else
                 {

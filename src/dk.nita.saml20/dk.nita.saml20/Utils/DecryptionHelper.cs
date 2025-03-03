@@ -4,19 +4,16 @@ using Org.BouncyCastle.Crypto.Parameters;
 using Org.BouncyCastle.Crypto.Digests;
 using Org.BouncyCastle.Math;
 using System.Security.Cryptography;
-using Org.BouncyCastle.Crypto;
-using Org.BouncyCastle.Security;
 using Org.BouncyCastle.Crypto.Modes;
-using System.Linq;
 using System;
 using System.Security.Cryptography.Xml;
 
 namespace dk.nita.saml20.Utils
 {
     /// <summary>
-    /// Helper class for BouncyCastle operations.
+    /// Helper class for decryption operations.
     /// </summary>
-    public static class BouncyCastleHelper
+    public static class DecryptionHelper
     {
         /// <summary>
         /// Decrypts private certificate with support for OaepSha256 format
@@ -29,7 +26,7 @@ namespace dk.nita.saml20.Utils
             // Export RSA parameters
             var rsaParams = rsa.ExportParameters(true);
 
-            // Convert RSAParameters to BouncyCastle key parameters
+            // Convert RSAParameters to private key key parameters
             var keyParams = new RsaPrivateCrtKeyParameters(
                 new BigInteger(1, rsaParams.Modulus),
                 new BigInteger(1, rsaParams.Exponent),
@@ -49,64 +46,32 @@ namespace dk.nita.saml20.Utils
         }
 
         /// <summary>
-        /// Decrypts private certificate with support for OaepSha256 format
-        /// </summary>
-        /// <param name="encryptedData"></param>
-        /// <param name="aesKey"></param>
-        /// <returns></returns>
-        /*public static byte[] DecryptAssertionWithAesGcm(EncryptedData encryptedData, byte[] aesKey)
-        {
-            byte[] encryptedBytes = encryptedData.CipherData.CipherValue;
-
-            // Adjust these lengths if your SAML response uses different sizes.
-            int ivLength = 12;   // Commonly 12 bytes for AES-GCM
-            int tagLength = 16;  // Commonly 16 bytes
-            
-            if (encryptedBytes.Length < ivLength + tagLength)
-                throw new Exception("The encrypted data is too short to contain both an IV and an authentication tag.");
-
-            // Extract IV, ciphertext, and authentication tag.
-            byte[] iv = encryptedBytes.Take(ivLength).ToArray();
-            byte[] authTag = encryptedBytes.Skip(encryptedBytes.Length - tagLength).ToArray();
-            byte[] cipherText = encryptedBytes.Skip(ivLength).Take(encryptedBytes.Length - ivLength - tagLength).ToArray();
-            
-            // Debug logging
-            Console.WriteLine("IV Length: " + iv.Length);
-            Console.WriteLine("Ciphertext Length: " + cipherText.Length);
-            Console.WriteLine("Auth Tag Length: " + authTag.Length);
-
-            // Initialize AES-GCM decryption
-            GcmBlockCipher cipher = new GcmBlockCipher(new AesEngine());
-            AeadParameters parameters = new AeadParameters(new KeyParameter(aesKey), tagLength * 8, iv, null);
-            cipher.Init(false, parameters); // false for decryption
-
-            byte[] output = new byte[cipher.GetOutputSize(cipherText.Length)];
-            int len = cipher.ProcessBytes(cipherText, 0, cipherText.Length, output, 0);
-            cipher.DoFinal(output, len);
-
-            return output;
-        }*/
-        
-        /// <summary>
-        /// 
+        /// Decrypts private certificate
         /// </summary>
         /// <param name="encryptedData"></param>
         /// <param name="key"></param>
         /// <returns></returns>
         public static byte[] Decrypt(EncryptedData encryptedData, byte[] key)
         {
+            if (encryptedData.EncryptionMethod.KeyAlgorithm != "http://www.w3.org/2009/xmlenc11#aes256-gcm")
+            {
+                throw new InvalidOperationException("The key algorithm is not supported");
+            }
+
             // Base64 decode encrypted data
             var nonceCipherValue = encryptedData.CipherData.CipherValue;
 
             // separate nonce and ciphertextTag
             const int nonceSize = 12;
+            const int macSize = 16;
+
             var nonce = new byte[nonceSize];
-            Array.Copy(nonceCipherValue, 0, nonce, 0, nonceSize);
+            Buffer.BlockCopy(nonceCipherValue, 0, nonce, 0, nonceSize);
             var ciphertextTag = new byte[nonceCipherValue.Length - nonceSize];
-            Array.Copy(nonceCipherValue, nonceSize, ciphertextTag, 0, ciphertextTag.Length);
+            Buffer.BlockCopy(nonceCipherValue, nonceSize, ciphertextTag, 0, ciphertextTag.Length);
 
             var gcmBlockCipher = new GcmBlockCipher(new AesEngine());
-            gcmBlockCipher.Init(false, new AeadParameters(new KeyParameter(key), 128, nonce));
+            gcmBlockCipher.Init(false, new AeadParameters(new KeyParameter(key), macSize * 8, nonce));
             var outputSizeDecryptedData = gcmBlockCipher.GetOutputSize(ciphertextTag.Length);
             var decryptedData = new byte[outputSizeDecryptedData];
             var processedBytes = gcmBlockCipher.ProcessBytes(ciphertextTag, 0, ciphertextTag.Length, decryptedData, 0);
