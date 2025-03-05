@@ -6,11 +6,11 @@ using System.Web.UI;
 // General Information about an assembly is controlled through the following 
 // set of attributes. Change these attribute values to modify the information
 // associated with an assembly.
-[assembly: AssemblyTitle("dk.nita.saml20")]
-[assembly: AssemblyDescription("OIOSAML.NET is a. Net-based SAML 2.0 toolkit with a reference implementation that complies with the Danish OIOSAML 3.0 profile. The Toolkit can be used by service providers to be included in the joint public single sign-on federation services (NemLog-in).")]
+[assembly: AssemblyTitle("kitos.dk.nita.saml20")]
+[assembly: AssemblyDescription("KITOS OIOSAML.NET is a OS2KITOS implementation of the OIOSAML.NET toolkit. OIOSAML.NET is a .Net-based SAML 2.0 toolkit with a reference implementation that complies with the Danish OIOSAML 3.0 profile. The Toolkit can be used by service providers to be included in the joint public single sign-on federation services (NemLog-in).")]
 [assembly: AssemblyConfiguration("")]
-[assembly: AssemblyCompany("Digitaliseringsstyrelsen")]
-[assembly: AssemblyProduct("dk.nita.saml20")]
+[assembly: AssemblyCompany("Strongminds")]
+[assembly: AssemblyProduct("kitos.dk.nita.saml20")]
 [assembly: AssemblyCopyright("Copyright ©2020")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]

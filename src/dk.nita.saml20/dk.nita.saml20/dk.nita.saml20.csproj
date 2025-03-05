@@ -9,7 +9,7 @@
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>dk.nita.saml20</RootNamespace>
-    <AssemblyName>dk.nita.saml20</AssemblyName>
+    <AssemblyName>kitos.dk.nita.saml20</AssemblyName>
     <FileUpgradeFlags>
     </FileUpgradeFlags>
     <UpgradeBackupLocation>
@@ -45,7 +45,7 @@
     <DefineConstants>DEBUG;TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
-    <DocumentationFile>bin\Debug\dk.nita.saml20.xml</DocumentationFile>
+    <DocumentationFile>bin\Debug\kitos.dk.nita.saml20.xml</DocumentationFile>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
     <CodeAnalysisRuleSet>AllRules.ruleset</CodeAnalysisRuleSet>
     <Prefer32Bit>false</Prefer32Bit>
@@ -59,7 +59,7 @@
     <WarningLevel>4</WarningLevel>
     <CodeAnalysisRuleSet>AllRules.ruleset</CodeAnalysisRuleSet>
     <Prefer32Bit>false</Prefer32Bit>
-    <DocumentationFile>bin\Release\dk.nita.saml20.xml</DocumentationFile>
+    <DocumentationFile>bin\Release\kitos.dk.nita.saml20.xml</DocumentationFile>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'MSI|AnyCPU' ">
     <OutputPath>bin\MSI\</OutputPath>
