@@ -150,7 +150,7 @@ namespace dk.nita.saml20
             if (encryptedData.EncryptionMethod != null)
             {
                 _sessionKeyAlgorithm = encryptedData.EncryptionMethod.KeyAlgorithm;
-                sessionKey = ExtractSessionKeyWithBouncyCastle(_encryptedAssertion, encryptedData.EncryptionMethod.KeyAlgorithm);
+                sessionKey = ExtractSessionKeyWithBouncyCastle(_encryptedAssertion);
             }
             else
             {
@@ -175,7 +175,7 @@ namespace dk.nita.saml20
             }
         }
 
-        private SymmetricAlgorithm ExtractSessionKeyWithBouncyCastle(XmlDocument encryptedAssertionDoc, string keyAlgorithm = "")
+        private SymmetricAlgorithm ExtractSessionKeyWithBouncyCastle(XmlDocument encryptedAssertionDoc)
         {
             // Find <EncryptedKey> in the SAML response
             XmlElement encryptedKeyElement = GetElement("EncryptedKey", Saml20Constants.XENC, encryptedAssertionDoc.DocumentElement);
@@ -198,72 +198,7 @@ namespace dk.nita.saml20
 
             return aes;
         }
-
-        /// <summary>
-        /// Locates and deserializes the key used for encrypting the assertion. Searches the list of keys below the &lt;EncryptedAssertion&gt; element and 
-        /// the &lt;KeyInfo&gt; element of the &lt;EncryptedData&gt; element.
-        /// </summary>
-        /// <param name="encryptedAssertionDoc"></param>
-        /// <param name="keyAlgorithm">The XML Encryption standard identifier for the algorithm of the session key.</param>
-        /// <returns>A <code>SymmetricAlgorithm</code> containing the key if it was successfully found. Null if the method was unable to locate the key.</returns>
-        private SymmetricAlgorithm ExtractSessionKey(XmlDocument encryptedAssertionDoc, string keyAlgorithm)
-        {
-            // Check if there are any <EncryptedKey> elements immediately below the EncryptedAssertion element.
-            foreach (XmlNode node in encryptedAssertionDoc.DocumentElement.ChildNodes)
-                if (node.LocalName == Schema.XEnc.EncryptedKey.ELEMENT_NAME && node.NamespaceURI == Saml20Constants.XENC)
-                {
-                    return ToSymmetricKey((XmlElement)node, keyAlgorithm);
-                }
-
-            // Check if the key is embedded in the <EncryptedData> element.
-            XmlElement encryptedData =
-                GetElement(SfwEncryptedData.ELEMENT_NAME, Saml20Constants.XENC, encryptedAssertionDoc.DocumentElement);
-            if (encryptedData != null)
-            {
-                XmlElement encryptedKeyElement =
-                    GetElement(Schema.XEnc.EncryptedKey.ELEMENT_NAME, Saml20Constants.XENC, encryptedAssertionDoc.DocumentElement);
-                if (encryptedKeyElement != null)
-                {
-                    return ToSymmetricKey(encryptedKeyElement, keyAlgorithm);
-                }
-            }
-
-            throw new Saml20FormatException("Unable to locate assertion decryption key.");
-        }
-
-        /// <summary>
-        /// Extracts the key from a &lt;EncryptedKey&gt; element.
-        /// </summary>
-        /// <param name="encryptedKeyElement"></param>
-        /// <param name="keyAlgorithm"></param>
-        /// <returns></returns>
-        private SymmetricAlgorithm ToSymmetricKey(XmlElement encryptedKeyElement, string keyAlgorithm)
-        {
-            var encryptedKey = new EncryptedKey();
-            encryptedKey.LoadXml(encryptedKeyElement);
-
-            if (encryptedKey.CipherData.CipherValue != null)
-            {
-                var key = GetKeyInstance(keyAlgorithm);
-                if (encryptedKey.EncryptionMethod.KeyAlgorithm == EncryptedXml.XmlEncRSAOAEPUrl)
-                {
-                    key.Key = EncryptedXml.DecryptKey(encryptedKey.CipherData.CipherValue, TransportKey, true);
-                }
-                else if (encryptedKey.EncryptionMethod.KeyAlgorithm.ToLower().Contains("oaep"))
-                {
-                    key.Key = DecryptionHelper.DecryptKeyWithOaepSha256(encryptedKey.CipherData.CipherValue, TransportKey);
-                }
-                else
-                {
-                    key.Key = EncryptedXml.DecryptKey(encryptedKey.CipherData.CipherValue, TransportKey, false); // PKCS#1
-                }
-
-                return key;
-            }
-
-            throw new NotImplementedException("Unable to decode CipherData of type \"CipherReference\".");
-        }
-
+        
         /// <summary>
         /// Creates an instance of a symmetric key, based on the algorithm identifier found in the Xml Encryption standard.        
         /// see also http://www.w3.org/TR/xmlenc-core/#sec-Algorithms
