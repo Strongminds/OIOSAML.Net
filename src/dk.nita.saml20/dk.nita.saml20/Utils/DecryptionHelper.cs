@@ -16,6 +16,11 @@ namespace dk.nita.saml20.Utils
     public static class DecryptionHelper
     {
         /// <summary>
+        /// Algorithm name for AES GCM
+        /// </summary>
+        public const string AesGcmAlgorithmName = "http://www.w3.org/2009/xmlenc11#aes256-gcm";
+
+        /// <summary>
         /// Decrypts private certificate with support for OaepSha256 format
         /// </summary>
         /// <param name="cipherValue">Cipher to be decrypted</param>
@@ -53,7 +58,7 @@ namespace dk.nita.saml20.Utils
         /// <returns></returns>
         public static byte[] Decrypt(EncryptedData encryptedData, byte[] key)
         {
-            if (encryptedData.EncryptionMethod.KeyAlgorithm != "http://www.w3.org/2009/xmlenc11#aes256-gcm")
+            if (encryptedData.EncryptionMethod.KeyAlgorithm != AesGcmAlgorithmName)
             {
                 throw new InvalidOperationException("The key algorithm is not supported");
             }
