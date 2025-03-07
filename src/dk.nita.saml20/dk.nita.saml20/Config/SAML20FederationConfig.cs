@@ -174,7 +174,7 @@ namespace dk.nita.saml20.config
         /// <returns></returns>
         public IDPEndPoint FindEndPoint(string endPointId)
         {
-            return IDPEndPoints.Find(delegate (IDPEndPoint ep) { return ep.Id == endPointId; });
+            return IDPEndPoints.Find(ep => endPointId.Contains(ep.Id));
         }
         /// <summary>
         /// AppSwitchReturnURL collection
