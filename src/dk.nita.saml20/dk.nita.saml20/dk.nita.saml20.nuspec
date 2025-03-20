@@ -1,19 +1,20 @@
 <?xml version="1.0"?>
 <package>
     <metadata>
-        <id>$id$</id>
-        <version>$version$</version>
-        <title>$title$</title>
-        <authors>$author$</authors>
-        <owners>$author$</owners>
-        <projectUrl>http://digitaliser.dk/group/42063</projectUrl>
-        <icon>images\oiosaml_logo.png</icon>
-        <requireLicenseAcceptance>false</requireLicenseAcceptance>
-        <license type="expression">MPL-1.1</license>
-        <description>$description$</description>
-        <releaseNotes>See https://github.com/digst/OIOSAML.Net/blob/master/Net%20SAML2%20Service%20Provider%20Framework.docx for release notes.</releaseNotes>
-        <copyright>$copyright$</copyright>
-        <tags>SAML OIOSAML SAML2 NEMLOGIN NEMLOG-IN</tags>
+      <id>$id$</id>
+      <version>$version$</version>
+      <title>Kitos dk.nita.saml20</title>
+      <authors>$author$</authors>
+      <owners>$author$</owners>
+      <projectUrl>https://github.com/Strongminds/OIOSAML.Net</projectUrl>
+      <requireLicenseAcceptance>false</requireLicenseAcceptance>
+      <license type="expression">MPL-1.1</license>
+      <description>$description$</description>
+      <releaseNotes>See https://github.com/Strongminds/OIOSAML.Net/blob/main/RELEASE_NOTES.md for release notes.</releaseNotes>
+      <tags>KITOS OIOSAML SAML2</tags>
+      <dependencies>
+        <dependency id="BouncyCastle.Cryptography" version="2.5.1" />
+      </dependencies>
     </metadata>
     <files>
         <file src="readme.txt" target=""/>
