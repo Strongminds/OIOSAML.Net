@@ -7,13 +7,13 @@ $ErrorActionPreference = "Stop"
 
 if($pushPackages.IsPresent)
 {
-    write-host "pushing package dk.nita.saml20" -ForegroundColor Yellow
+    write-host "pushing package kitos.dk.nita.saml20" -ForegroundColor Yellow
     .\nuget.exe push $("dk.nita.saml20.$version.nupkg") -Source https://www.nuget.org/api/v2/package
 
-    write-host "pushing package dk.nita.saml20.ext.audit.log4net" -ForegroundColor Yellow
+    write-host "pushing package kitos.dk.nita.saml20.ext.audit.log4net" -ForegroundColor Yellow
     .\nuget.exe push $("dk.nita.saml20.ext.audit.log4net.$version.nupkg") -Source https://www.nuget.org/api/v2/package
     
-    write-host "pushing package dk.nita.saml20.ext.sessionstore.sqlserver" -ForegroundColor Yellow
+    write-host "pushing package kitos.dk.nita.saml20.ext.sessionstore.sqlserver" -ForegroundColor Yellow
     .\nuget.exe push $("dk.nita.saml20.ext.sessionstore.sqlserver.$version.nupkg") -Source https://www.nuget.org/api/v2/package
 }
 else
@@ -29,12 +29,12 @@ else
     write-host "Restoring nuget packages" -ForegroundColor Yellow
     .\nuget.exe restore ..\src\dk.nita.saml20
 
-    write-host "Building nuget package dk.nita.saml20" -ForegroundColor Yellow
+    write-host "Building nuget package kitos.dk.nita.saml20" -ForegroundColor Yellow
     .\nuget.exe pack ..\src\dk.nita.saml20\dk.nita.saml20\dk.nita.saml20.csproj -build -Version $version -Symbols -Properties Configuration=Release
 
-    write-host "Building nuget package dk.nita.saml20.ext.audit.log4net" -ForegroundColor Yellow
+    write-host "Building nuget package kitos.dk.nita.saml20.ext.audit.log4net" -ForegroundColor Yellow
     .\nuget.exe pack ..\src\dk.nita.saml20\dk.nita.saml20.ext.audit.log4net\dk.nita.saml20.ext.audit.log4net.csproj -build -Version $version -Symbols -Properties Configuration=Release
 
-    write-host "Building nuget package dk.nita.saml20.ext.sessionstore.sqlserver" -ForegroundColor Yellow
+    write-host "Building nuget package kitos.dk.nita.saml20.ext.sessionstore.sqlserver" -ForegroundColor Yellow
     .\nuget.exe pack ..\src\dk.nita.saml20\dk.nita.saml20.ext.sessionstore.sqlserver\dk.nita.saml20.ext.sessionstore.sqlserver.csproj -build -Version $version -Symbols -Properties Configuration=Release
 }

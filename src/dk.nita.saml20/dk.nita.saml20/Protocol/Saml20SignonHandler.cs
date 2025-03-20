@@ -317,6 +317,10 @@ namespace dk.nita.saml20.protocol
                 // Check if an encoding-override exists for the IdP endpoint in question
                 string issuer = GetIssuer(assertion);
                 IDPEndPoint endpoint = RetrieveIDPConfiguration(issuer);
+                if (endpoint is null)
+                {
+                    throw new InvalidOperationException($"Unable to find configuration for issuer '{issuer}'");
+                }
                 if (!string.IsNullOrEmpty(endpoint.ResponseEncoding))
                 {
                     Encoding encodingOverride = null;
@@ -409,7 +413,7 @@ namespace dk.nita.saml20.protocol
         {
             var tryDecryptAssertion = new Func<X509Certificate2, Saml20EncryptedAssertion>((certificate) =>
             {
-                Saml20EncryptedAssertion decryptedAssertion = new Saml20EncryptedAssertion((RSA)certificate.PrivateKey);
+                Saml20EncryptedAssertion decryptedAssertion = new Saml20EncryptedAssertion(certificate.GetRSAPrivateKey());
                 decryptedAssertion.LoadXml(elem);
                 decryptedAssertion.Decrypt();
                 return decryptedAssertion;
