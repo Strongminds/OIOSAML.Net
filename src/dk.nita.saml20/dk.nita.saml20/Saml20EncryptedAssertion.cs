@@ -262,11 +262,12 @@ namespace dk.nita.saml20
             if (encryptedKey.CipherData.CipherValue != null)
             {
                 var key = GetKeyInstance(keyAlgorithm);
-                if (encryptedKey.EncryptionMethod.KeyAlgorithm == EncryptedXml.XmlEncRSAOAEPUrl)
+                var keyEncAlgorithm = encryptedKey.EncryptionMethod?.KeyAlgorithm ?? string.Empty;
+                if (keyEncAlgorithm == EncryptedXml.XmlEncRSAOAEPUrl)
                 {
                     key.Key = EncryptedXml.DecryptKey(encryptedKey.CipherData.CipherValue, TransportKey, true);
                 }
-                else if (encryptedKey.EncryptionMethod.KeyAlgorithm.ToLower().Contains("oaep"))
+                else if (keyEncAlgorithm.ToLower().Contains("oaep"))
                 {
                     key.Key = DecryptionHelper.DecryptKeyWithOaepSha256(encryptedKey.CipherData.CipherValue, TransportKey);
                 }
