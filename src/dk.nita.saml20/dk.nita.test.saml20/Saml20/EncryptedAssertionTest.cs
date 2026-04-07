@@ -266,8 +266,7 @@ namespace dk.nita.test.Saml20
         public void TestAlgorithmConfiguration_01()
         {
             Saml20EncryptedAssertion encryptedAssertion = new Saml20EncryptedAssertion();
-            encryptedAssertion.SessionKeyAlgorithm = "RSA";
-            Assert.Fail("\"Saml20EncryptedAssertion\" class does not respond to incorrect algorithm identifying URI.");
+            Assert.Throws<ArgumentException>(() => encryptedAssertion.SessionKeyAlgorithm = "RSA");
         }
 
         

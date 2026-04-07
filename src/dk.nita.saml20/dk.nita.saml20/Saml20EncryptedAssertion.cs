@@ -157,8 +157,17 @@ namespace dk.nita.saml20
                 sessionKey = ExtractSessionKey(_encryptedAssertion);
             }
 
-            // Decrypt the assertion using AES-GCM
-            byte[] plaintext = DecryptionHelper.Decrypt(encryptedData, sessionKey.Key);
+            // Decrypt the assertion: use AES-GCM helper for GCM, standard EncryptedXml for all other algorithms
+            byte[] plaintext;
+            if (_sessionKeyAlgorithm == DecryptionHelper.AesGcmAlgorithmName)
+            {
+                plaintext = DecryptionHelper.Decrypt(encryptedData, sessionKey.Key);
+            }
+            else
+            {
+                EncryptedXml encryptedXml = new EncryptedXml(_encryptedAssertion);
+                plaintext = encryptedXml.DecryptData(encryptedData, sessionKey);
+            }
 
             _assertion = new XmlDocument();
             _assertion.XmlResolver = null;

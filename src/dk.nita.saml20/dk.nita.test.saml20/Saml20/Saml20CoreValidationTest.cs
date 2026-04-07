@@ -51,7 +51,7 @@ namespace dk.nita.test.Saml20
             nameID.Format = Saml20Constants.NameIdentifierFormats.Email;
             nameID.Value = " ";
             Saml20NameIDValidator validator = new Saml20NameIDValidator();
-            validator.ValidateNameID(nameID);
+            Assert.Throws<Saml20FormatException>(() => validator.ValidateNameID(nameID));
         }
 
         /// <summary>
@@ -119,7 +119,7 @@ namespace dk.nita.test.Saml20
             nameID.Format = Saml20Constants.NameIdentifierFormats.X509SubjectName;
             nameID.Value = "";
             Saml20NameIDValidator validator = new Saml20NameIDValidator();
-            validator.ValidateNameID(nameID);
+            Assert.Throws<Saml20FormatException>(() => validator.ValidateNameID(nameID));
         }
 
         [Test]
@@ -129,7 +129,7 @@ namespace dk.nita.test.Saml20
             nameID.Format = Saml20Constants.NameIdentifierFormats.X509SubjectName;
             nameID.Value = " ";
             Saml20NameIDValidator validator = new Saml20NameIDValidator();
-            validator.ValidateNameID(nameID);
+            Assert.Throws<Saml20FormatException>(() => validator.ValidateNameID(nameID));
         }
 
         [Test]
@@ -139,7 +139,7 @@ namespace dk.nita.test.Saml20
             nameID.Format = Saml20Constants.NameIdentifierFormats.Windows;
             nameID.Value = " ";
             Saml20NameIDValidator validator = new Saml20NameIDValidator();
-            validator.ValidateNameID(nameID);
+            Assert.Throws<Saml20FormatException>(() => validator.ValidateNameID(nameID));
         }
 
         [Test]
@@ -163,7 +163,7 @@ namespace dk.nita.test.Saml20
             nameID.Format = Saml20Constants.NameIdentifierFormats.Kerberos;
             nameID.Value = "";
             Saml20NameIDValidator validator = new Saml20NameIDValidator();
-            validator.ValidateNameID(nameID);
+            Assert.Throws<Saml20FormatException>(() => validator.ValidateNameID(nameID));
         }
 
         [Test]
@@ -173,7 +173,7 @@ namespace dk.nita.test.Saml20
             nameID.Format = Saml20Constants.NameIdentifierFormats.Kerberos;
             nameID.Value = " ";
             Saml20NameIDValidator validator = new Saml20NameIDValidator();
-            validator.ValidateNameID(nameID);
+            Assert.Throws<Saml20FormatException>(() => validator.ValidateNameID(nameID));
         }
         [Test]
         public void _0002_NameID_Invalid_ContentKerberos1()
@@ -182,7 +182,7 @@ namespace dk.nita.test.Saml20
             nameID.Format = Saml20Constants.NameIdentifierFormats.Kerberos;
             nameID.Value = @"b";
             Saml20NameIDValidator validator = new Saml20NameIDValidator();
-            validator.ValidateNameID(nameID);
+            Assert.Throws<Saml20FormatException>(() => validator.ValidateNameID(nameID));
         }
 
         [Test]
@@ -192,7 +192,7 @@ namespace dk.nita.test.Saml20
             nameID.Format = Saml20Constants.NameIdentifierFormats.Kerberos;
             nameID.Value = @"a\b";
             Saml20NameIDValidator validator = new Saml20NameIDValidator();
-            validator.ValidateNameID(nameID);
+            Assert.Throws<Saml20FormatException>(() => validator.ValidateNameID(nameID));
         }
 
         [Test]
@@ -212,7 +212,7 @@ namespace dk.nita.test.Saml20
             nameID.Format = Saml20Constants.NameIdentifierFormats.Entity;
             nameID.Value = "";
             Saml20NameIDValidator validator = new Saml20NameIDValidator();
-            validator.ValidateNameID(nameID);
+            Assert.Throws<Saml20FormatException>(() => validator.ValidateNameID(nameID));
         }
 
         [Test]
@@ -222,7 +222,7 @@ namespace dk.nita.test.Saml20
             nameID.Format = Saml20Constants.NameIdentifierFormats.Entity;
             nameID.Value = " ";
             Saml20NameIDValidator validator = new Saml20NameIDValidator();
-            validator.ValidateNameID(nameID);
+            Assert.Throws<Saml20FormatException>(() => validator.ValidateNameID(nameID));
         }
 
         [Test]
@@ -232,7 +232,7 @@ namespace dk.nita.test.Saml20
             nameID.Format = Saml20Constants.NameIdentifierFormats.Entity;
             nameID.Value = new string('f', 1025);
             Saml20NameIDValidator validator = new Saml20NameIDValidator();
-            validator.ValidateNameID(nameID);
+            Assert.Throws<Saml20FormatException>(() => validator.ValidateNameID(nameID));
         }
 
         [Test]
@@ -253,7 +253,7 @@ namespace dk.nita.test.Saml20
             nameID.Value = new string('f', 1024);
             nameID.NameQualifier = "ksljdf";
             Saml20NameIDValidator validator = new Saml20NameIDValidator();
-            validator.ValidateNameID(nameID);
+            Assert.Throws<Saml20FormatException>(() => validator.ValidateNameID(nameID));
         }
 
         [Test]
@@ -264,7 +264,7 @@ namespace dk.nita.test.Saml20
             nameID.Value = new string('f', 1024);
             nameID.SPNameQualifier = "ksljdf";
             Saml20NameIDValidator validator = new Saml20NameIDValidator();
-            validator.ValidateNameID(nameID);
+            Assert.Throws<Saml20FormatException>(() => validator.ValidateNameID(nameID));
         }
 
         [Test]
@@ -275,7 +275,7 @@ namespace dk.nita.test.Saml20
             nameID.Value = new string('f', 1024);
             nameID.SPProvidedID = "ksljdf";
             Saml20NameIDValidator validator = new Saml20NameIDValidator();
-            validator.ValidateNameID(nameID);
+            Assert.Throws<Saml20FormatException>(() => validator.ValidateNameID(nameID));
         }
 
         [Test]
@@ -285,7 +285,7 @@ namespace dk.nita.test.Saml20
             nameID.Format = Saml20Constants.NameIdentifierFormats.Persistent;
             nameID.Value = "";
             Saml20NameIDValidator validator = new Saml20NameIDValidator();
-            validator.ValidateNameID(nameID);
+            Assert.Throws<Saml20FormatException>(() => validator.ValidateNameID(nameID));
         }
 
         [Test]
@@ -295,7 +295,7 @@ namespace dk.nita.test.Saml20
             nameID.Format = Saml20Constants.NameIdentifierFormats.Persistent;
             nameID.Value = " ";
             Saml20NameIDValidator validator = new Saml20NameIDValidator();
-            validator.ValidateNameID(nameID);
+            Assert.Throws<Saml20FormatException>(() => validator.ValidateNameID(nameID));
         }
 
         [Test]
@@ -305,7 +305,7 @@ namespace dk.nita.test.Saml20
             nameID.Format = Saml20Constants.NameIdentifierFormats.Persistent;
             nameID.Value = new string('f', 257);
             Saml20NameIDValidator validator = new Saml20NameIDValidator();
-            validator.ValidateNameID(nameID);
+            Assert.Throws<Saml20FormatException>(() => validator.ValidateNameID(nameID));
         }
 
         [Test]
@@ -325,7 +325,7 @@ namespace dk.nita.test.Saml20
             nameID.Format = Saml20Constants.NameIdentifierFormats.Transient;
             nameID.Value = new string('f', 15);
             Saml20NameIDValidator validator = new Saml20NameIDValidator();
-            validator.ValidateNameID(nameID);
+            Assert.Throws<Saml20FormatException>(() => validator.ValidateNameID(nameID));
         }
 
         [Test]
@@ -335,7 +335,7 @@ namespace dk.nita.test.Saml20
             nameID.Format = Saml20Constants.NameIdentifierFormats.Transient;
             nameID.Value = new string('f', 257);
             Saml20NameIDValidator validator = new Saml20NameIDValidator();
-            validator.ValidateNameID(nameID);
+            Assert.Throws<Saml20FormatException>(() => validator.ValidateNameID(nameID));
         }
 
         [Test]
@@ -377,7 +377,7 @@ namespace dk.nita.test.Saml20
             Assertion saml20Assertion = AssertionUtil.GetBasicAssertion();
             saml20Assertion.Version = "60";
 
-            CreateSaml20Token(saml20Assertion);
+            Assert.Throws<Saml20FormatException>(() => CreateSaml20Token(saml20Assertion));
         }
 
         /// <summary>
@@ -389,7 +389,7 @@ namespace dk.nita.test.Saml20
             Assertion saml20Assertion = AssertionUtil.GetBasicAssertion();
             saml20Assertion.ID = null;
 
-            CreateSaml20Token(saml20Assertion);
+            Assert.Throws<Saml20FormatException>(() => CreateSaml20Token(saml20Assertion));
         }
 
         //
@@ -402,7 +402,7 @@ namespace dk.nita.test.Saml20
             Assertion saml20Assertion = AssertionUtil.GetBasicAssertion();
             saml20Assertion.Issuer = null;
 
-            CreateSaml20Token(saml20Assertion);
+            Assert.Throws<Saml20FormatException>(() => CreateSaml20Token(saml20Assertion));
         }
 
         /// <summary>
@@ -414,11 +414,11 @@ namespace dk.nita.test.Saml20
             Assertion saml20Assertion = AssertionUtil.GetBasicAssertion();
             saml20Assertion.Issuer.Format = "a non wellformed uri";
 
-            CreateSaml20Token(saml20Assertion);
+            Assert.Throws<Saml20FormatException>(() => CreateSaml20Token(saml20Assertion));
         }
 
         /// <summary>
-        /// Tests validation of required IssueInstant Element 
+        /// Tests validation of required IssueInstant Element
         /// </summary>
         [Test]
         public void IssueInstant()
@@ -426,7 +426,7 @@ namespace dk.nita.test.Saml20
             Assertion saml20Assertion = AssertionUtil.GetBasicAssertion();
             saml20Assertion.IssueInstant = null;
 
-            CreateSaml20Token(saml20Assertion);
+            Assert.Throws<Saml20FormatException>(() => CreateSaml20Token(saml20Assertion));
         }
 
         #endregion
@@ -449,7 +449,7 @@ namespace dk.nita.test.Saml20
 
             saml20Assertion.Conditions.Items = conditions;
 
-            CreateSaml20Token(saml20Assertion);
+            Assert.Throws<Saml20FormatException>(() => CreateSaml20Token(saml20Assertion));
         }
 
         /// <summary>
@@ -468,7 +468,7 @@ namespace dk.nita.test.Saml20
 
             saml20Assertion.Conditions.Items = conditions;
 
-            CreateSaml20Token(saml20Assertion);
+            Assert.Throws<Saml20FormatException>(() => CreateSaml20Token(saml20Assertion));
         }
 
         /// <summary>
@@ -487,7 +487,7 @@ namespace dk.nita.test.Saml20
             conditions.AddRange(saml20Assertion.Conditions.Items);
             saml20Assertion.Conditions.Items = conditions;
 
-            CreateSaml20Token(saml20Assertion);
+            Assert.Throws<Saml20FormatException>(() => CreateSaml20Token(saml20Assertion));
         }
 
         /// <summary>
@@ -525,7 +525,7 @@ namespace dk.nita.test.Saml20
             conditions.AddRange(saml20Assertion.Conditions.Items);
             saml20Assertion.Conditions.Items = conditions;
 
-            CreateSaml20Token(saml20Assertion);
+            Assert.Throws<Saml20FormatException>(() => CreateSaml20Token(saml20Assertion));
         }
 
         /// <summary>
@@ -598,7 +598,7 @@ namespace dk.nita.test.Saml20
             saml20Assertion.Conditions.NotOnOrAfter = null;
 
             Saml20AssertionValidator validator = new Saml20AssertionValidator(AssertionUtil.GetAudiences(), false);
-            validator.ValidateTimeRestrictions(saml20Assertion, new TimeSpan(), DateTime.UtcNow);
+            Assert.Throws<Saml20FormatException>(() => validator.ValidateTimeRestrictions(saml20Assertion, new TimeSpan(), DateTime.UtcNow));
         }
 
         /// <summary>
@@ -626,7 +626,7 @@ namespace dk.nita.test.Saml20
             saml20Assertion.Conditions.NotOnOrAfter = DateTime.UtcNow.AddDays(-1);
 
             Saml20AssertionValidator validator = new Saml20AssertionValidator(AssertionUtil.GetAudiences(), false);
-            validator.ValidateTimeRestrictions(saml20Assertion, new TimeSpan(), DateTime.UtcNow);
+            Assert.Throws<Saml20FormatException>(() => validator.ValidateTimeRestrictions(saml20Assertion, new TimeSpan(), DateTime.UtcNow));
         }
 
         /// <summary>
@@ -641,7 +641,7 @@ namespace dk.nita.test.Saml20
             saml20Assertion.Conditions.NotOnOrAfter = DateTime.UtcNow;
 
             Saml20AssertionValidator validator = new Saml20AssertionValidator(AssertionUtil.GetAudiences(), false);
-            validator.ValidateTimeRestrictions(saml20Assertion, new TimeSpan(), DateTime.UtcNow);
+            Assert.Throws<Saml20FormatException>(() => validator.ValidateTimeRestrictions(saml20Assertion, new TimeSpan(), DateTime.UtcNow));
         }
 
         /// <summary>
@@ -670,7 +670,7 @@ namespace dk.nita.test.Saml20
                 sp.AllowedAudienceUris.Audiences = null;
 
                 Assertion saml20Assertion = AssertionUtil.GetBasicAssertion();
-                CreateSaml20Token(saml20Assertion);
+                Assert.Throws<Saml20FormatException>(() => CreateSaml20Token(saml20Assertion));
             }
             finally
             {
@@ -679,7 +679,7 @@ namespace dk.nita.test.Saml20
         }
 
         /// <summary>
-        /// Test that services that are not configured with the right allowed audience URI's do not 
+        /// Test that services that are not configured with the right allowed audience URI's do not
         /// consider audience-restricted assertions valid
         /// </summary>
         [Test]
@@ -692,7 +692,7 @@ namespace dk.nita.test.Saml20
                 sp.AllowedAudienceUris.Audiences = new List<string>(new string[] { "urn:lalal" });
 
                 Assertion saml20Assertion = AssertionUtil.GetBasicAssertion();
-                CreateSaml20Token(saml20Assertion);
+                Assert.Throws<Saml20FormatException>(() => CreateSaml20Token(saml20Assertion));
             }
             finally
             {
@@ -711,11 +711,11 @@ namespace dk.nita.test.Saml20
             sar.Audience = new List<string>( new string[] { "malformed uri" });
 
             saml20Assertion.Conditions.Items = new List<ConditionAbstract>(new ConditionAbstract[] { sar });
-            CreateSaml20Token(saml20Assertion);
+            Assert.Throws<Saml20FormatException>(() => CreateSaml20Token(saml20Assertion));
         }
 
         /// <summary>
-        /// Test that audience-restricted assertions are not valid if ANY of the audience restrictions is not met 
+        /// Test that audience-restricted assertions are not valid if ANY of the audience restrictions is not met
         /// </summary>
         [Test]
         public void AudienceRestriction_Invalid_MultipleAudienceRestrictions()
@@ -729,11 +729,11 @@ namespace dk.nita.test.Saml20
 
             saml20Assertion.Conditions.Items = audienceConditions;
 
-            CreateSaml20Token(saml20Assertion);
+            Assert.Throws<Saml20FormatException>(() => CreateSaml20Token(saml20Assertion));
         }
 
         /// <summary>
-        /// Test that audience-restricted assertions are valid if ALL of the audience restrictions are met 
+        /// Test that audience-restricted assertions are valid if ALL of the audience restrictions are met
         /// </summary>
         [Test]
         public void AudienceRestriction_Valid_MultipleAudienceRestrictions()
@@ -788,7 +788,7 @@ namespace dk.nita.test.Saml20
             saml20Assertion.Subject.Items = new object[] { };
 
             Saml20SubjectValidator validator = new Saml20SubjectValidator();
-            validator.ValidateSubject(saml20Assertion.Subject);
+            Assert.Throws<Saml20FormatException>(() => validator.ValidateSubject(saml20Assertion.Subject));
         }
 
         /// <summary>
@@ -801,7 +801,7 @@ namespace dk.nita.test.Saml20
             saml20Assertion.Subject.Items = new object[] { String.Empty, 24, new List<object>(1), new Advice() };
 
             Saml20SubjectValidator validator = new Saml20SubjectValidator();
-            validator.ValidateSubject(saml20Assertion.Subject);
+            Assert.Throws<Saml20FormatException>(() => validator.ValidateSubject(saml20Assertion.Subject));
         }
 
         /// <summary>
@@ -813,7 +813,7 @@ namespace dk.nita.test.Saml20
             SubjectConfirmation sct = new SubjectConfirmation();
             sct.Method = " ";
             Saml20SubjectConfirmationValidator validator = new Saml20SubjectConfirmationValidator();
-            validator.ValidateSubjectConfirmation(sct);
+            Assert.Throws<Saml20FormatException>(() => validator.ValidateSubjectConfirmation(sct));
         }
 
         /// <summary>
@@ -825,7 +825,7 @@ namespace dk.nita.test.Saml20
             SubjectConfirmation sct = new SubjectConfirmation();
             sct.Method = "malformed uri";
             Saml20SubjectConfirmationValidator validator = new Saml20SubjectConfirmationValidator();
-            validator.ValidateSubjectConfirmation(sct);
+            Assert.Throws<Saml20FormatException>(() => validator.ValidateSubjectConfirmation(sct));
         }
 
         /// <summary>
@@ -838,7 +838,7 @@ namespace dk.nita.test.Saml20
             subjectConfirmationData.Recipient = " ";
 
             Saml20SubjectConfirmationDataValidator validator = new Saml20SubjectConfirmationDataValidator();
-            validator.ValidateSubjectConfirmationData(subjectConfirmationData);
+            Assert.Throws<Saml20FormatException>(() => validator.ValidateSubjectConfirmationData(subjectConfirmationData));
         }
 
         /// <summary>
@@ -851,7 +851,7 @@ namespace dk.nita.test.Saml20
             subjectConfirmationData.Recipient = "malformed uri";
 
             Saml20SubjectConfirmationDataValidator validator = new Saml20SubjectConfirmationDataValidator();
-            validator.ValidateSubjectConfirmationData(subjectConfirmationData);
+            Assert.Throws<Saml20FormatException>(() => validator.ValidateSubjectConfirmationData(subjectConfirmationData));
         }
 
         /// <summary>
@@ -880,7 +880,7 @@ namespace dk.nita.test.Saml20
             subjectConfirmationData.NotOnOrAfter = subjectConfirmationData.NotBefore.Value.AddHours(-1);
 
             Saml20SubjectConfirmationDataValidator validator = new Saml20SubjectConfirmationDataValidator();
-            validator.ValidateSubjectConfirmationData(subjectConfirmationData);
+            Assert.Throws<Saml20FormatException>(() => validator.ValidateSubjectConfirmationData(subjectConfirmationData));
         }
         /// <summary>
         /// Tests the validation of the SubjectConfirmationData {NotBefore, NotOnOrAfter} attributes
@@ -916,7 +916,7 @@ namespace dk.nita.test.Saml20
             subjectConfirmationData.Recipient = "urn:wellformed.uri:ok";
 
             Saml20SubjectConfirmationDataValidator validator = new Saml20SubjectConfirmationDataValidator();
-            validator.ValidateSubjectConfirmationData(subjectConfirmationData);
+            Assert.Throws<Saml20FormatException>(() => validator.ValidateSubjectConfirmationData(subjectConfirmationData));
         }
 
         [Test]
@@ -928,7 +928,7 @@ namespace dk.nita.test.Saml20
             subjectConfirmationData.AnyElements = new XmlElement[] { doc.CreateElement("ds", "KeyInfo", "http://wrongNameSpace.uri") };
 
             Saml20SubjectConfirmationDataValidator validator = new Saml20SubjectConfirmationDataValidator();
-            validator.ValidateSubjectConfirmationData(subjectConfirmationData);
+            Assert.Throws<Saml20FormatException>(() => validator.ValidateSubjectConfirmationData(subjectConfirmationData));
         }
 
 
@@ -941,7 +941,7 @@ namespace dk.nita.test.Saml20
             subjectConfirmationData.AnyElements = new XmlElement[] { doc.CreateElement("ds", "KeyInfo", Saml20Constants.XMLDSIG) };
 
             Saml20SubjectConfirmationDataValidator validator = new Saml20SubjectConfirmationDataValidator();
-            validator.ValidateSubjectConfirmationData(subjectConfirmationData);
+            Assert.Throws<Saml20FormatException>(() => validator.ValidateSubjectConfirmationData(subjectConfirmationData));
         }
 
         [Test]
@@ -956,7 +956,7 @@ namespace dk.nita.test.Saml20
             subjectConfirmationData.AnyElements = new XmlElement[] { elem };
 
             Saml20SubjectConfirmationDataValidator validator = new Saml20SubjectConfirmationDataValidator();
-            validator.ValidateSubjectConfirmationData(subjectConfirmationData);
+            Assert.Throws<Saml20FormatException>(() => validator.ValidateSubjectConfirmationData(subjectConfirmationData));
         }
 
         [Test]
@@ -982,7 +982,7 @@ namespace dk.nita.test.Saml20
             subjectConfirmation.SubjectConfirmationData = new SubjectConfirmationData();
 
             Saml20SubjectConfirmationValidator validator = new Saml20SubjectConfirmationValidator();
-            validator.ValidateSubjectConfirmation(subjectConfirmation);
+            Assert.Throws<Saml20FormatException>(() => validator.ValidateSubjectConfirmation(subjectConfirmation));
         }
 
         [Test]
@@ -1016,13 +1016,13 @@ namespace dk.nita.test.Saml20
 
             saml20Assertion.Items = statements.ToArray();
 
-            CreateSaml20Token(saml20Assertion);
+            Assert.Throws<Saml20FormatException>(() => CreateSaml20Token(saml20Assertion));
         }
 
         /// <summary>
         /// Tests that AuthnStatement objects must have an AuthnInstant attribute
         /// </summary>
-        [Ignore("To be fixed")]    // TODO: test data needs fixing
+        [Ignore("To be fixed")]// TODO: test data needs fixing
         public void AuthnStatement_Invalid_SessionNotOnOrAfter()
         {
             Assertion saml20Assertion = AssertionUtil.GetBasicAssertion();
@@ -1053,7 +1053,7 @@ namespace dk.nita.test.Saml20
 
             saml20Assertion.Items = statements.ToArray();
 
-            CreateSaml20Token(saml20Assertion);
+            Assert.Throws<Saml20FormatException>(() => CreateSaml20Token(saml20Assertion));
         }
 
         /// <summary>
@@ -1072,7 +1072,7 @@ namespace dk.nita.test.Saml20
 
             saml20Assertion.Items = statements.ToArray();
 
-            CreateSaml20Token(saml20Assertion);
+            Assert.Throws<Saml20FormatException>(() => CreateSaml20Token(saml20Assertion));
         }
 
         /// <summary>
@@ -1093,7 +1093,7 @@ namespace dk.nita.test.Saml20
 
             saml20Assertion.Items = statements.ToArray();
 
-            CreateSaml20Token(saml20Assertion);
+            Assert.Throws<Saml20FormatException>(() => CreateSaml20Token(saml20Assertion));
         }
 
         /// <summary>
@@ -1114,7 +1114,7 @@ namespace dk.nita.test.Saml20
 
             saml20Assertion.Items = statements.ToArray();
 
-            CreateSaml20Token(saml20Assertion);
+            Assert.Throws<Saml20FormatException>(() => CreateSaml20Token(saml20Assertion));
         }
 
         /// <summary>
@@ -1135,7 +1135,7 @@ namespace dk.nita.test.Saml20
 
             saml20Assertion.Items = statements.ToArray();
 
-            CreateSaml20Token(saml20Assertion);
+            Assert.Throws<Saml20FormatException>(() => CreateSaml20Token(saml20Assertion));
         }
 
 
@@ -1157,7 +1157,7 @@ namespace dk.nita.test.Saml20
 
             saml20Assertion.Items = statements.ToArray();
 
-            CreateSaml20Token(saml20Assertion);
+            Assert.Throws<Saml20FormatException>(() => CreateSaml20Token(saml20Assertion));
         }
 
         /// <summary>
@@ -1178,7 +1178,7 @@ namespace dk.nita.test.Saml20
 
             saml20Assertion.Items = statements.ToArray();
 
-            CreateSaml20Token(saml20Assertion);
+            Assert.Throws<Saml20FormatException>(() => CreateSaml20Token(saml20Assertion));
         }
 
         /// <summary>
@@ -1199,7 +1199,7 @@ namespace dk.nita.test.Saml20
 
             saml20Assertion.Items = statements.ToArray();
 
-            CreateSaml20Token(saml20Assertion);
+            Assert.Throws<Saml20FormatException>(() => CreateSaml20Token(saml20Assertion));
         }
 
         /// <summary>
@@ -1221,7 +1221,7 @@ namespace dk.nita.test.Saml20
 
             saml20Assertion.Items = statements.ToArray();
 
-            CreateSaml20Token(saml20Assertion);
+            Assert.Throws<Saml20FormatException>(() => CreateSaml20Token(saml20Assertion));
         }
 
         /// <summary>
@@ -1238,7 +1238,7 @@ namespace dk.nita.test.Saml20
 
             saml20Assertion.Items = statements.ToArray();
 
-            CreateSaml20Token(saml20Assertion);
+            Assert.Throws<Saml20FormatException>(() => CreateSaml20Token(saml20Assertion));
         }
 
         /// <summary>
@@ -1255,7 +1255,7 @@ namespace dk.nita.test.Saml20
 
             saml20Assertion.Items = statements.ToArray();
 
-            CreateSaml20Token(saml20Assertion);
+            Assert.Throws<Saml20FormatException>(() => CreateSaml20Token(saml20Assertion));
         }
 
         /// <summary>
@@ -1272,7 +1272,7 @@ namespace dk.nita.test.Saml20
 
             saml20Assertion.Items = statements.ToArray();
 
-            CreateSaml20Token(saml20Assertion);
+            Assert.Throws<Saml20FormatException>(() => CreateSaml20Token(saml20Assertion));
         }
 
         /// <summary>
@@ -1291,7 +1291,7 @@ namespace dk.nita.test.Saml20
 
             saml20Assertion.Items = statements.ToArray();
 
-            CreateSaml20Token(saml20Assertion);
+            Assert.Throws<Saml20FormatException>(() => CreateSaml20Token(saml20Assertion));
         }
 
         /// <summary>
@@ -1340,7 +1340,7 @@ namespace dk.nita.test.Saml20
             sas.Items = attributes.ToArray();
             saml20Assertion.Items = statements.ToArray();
 
-            CreateSaml20Token(saml20Assertion);
+            Assert.Throws<Saml20FormatException>(() => CreateSaml20Token(saml20Assertion));
         }
 
         /// <summary>
@@ -1361,7 +1361,7 @@ namespace dk.nita.test.Saml20
             sas.Items = attributes.ToArray();
             saml20Assertion.Items = statements.ToArray();
 
-            CreateSaml20Token(saml20Assertion);
+            Assert.Throws<Saml20FormatException>(() => CreateSaml20Token(saml20Assertion));
         }
 
         [Test]
@@ -1371,7 +1371,7 @@ namespace dk.nita.test.Saml20
             Saml20StatementValidator validator = new Saml20StatementValidator();
 
             statement.Resource = null;
-            validator.ValidateStatement(statement);
+            Assert.Throws<Saml20FormatException>(() => validator.ValidateStatement(statement));
         }
 
         [Test]
@@ -1381,7 +1381,7 @@ namespace dk.nita.test.Saml20
             Saml20StatementValidator validator = new Saml20StatementValidator();
 
             statement.Resource = "a malformed uri";
-            validator.ValidateStatement(statement);
+            Assert.Throws<Saml20FormatException>(() => validator.ValidateStatement(statement));
         }
 
         [Test]

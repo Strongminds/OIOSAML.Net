@@ -28,14 +28,14 @@ namespace dk.nita.test.Saml20.Protocol
         {
             XmlDocument doc = LoadDocument(@"Saml20\Assertions\EncryptedAssertion_01");
             doc.PreserveWhitespace = false;
-            XmlSignatureUtils.IsSigned(doc);
+            Assert.Throws<InvalidOperationException>(() => XmlSignatureUtils.IsSigned(doc));
         }
 
         [Test]
         public void CheckSignature_01()
         {
             XmlDocument doc = LoadDocument(@"Saml20\Assertions\EncryptedAssertion_01");            
-            XmlSignatureUtils.CheckSignature(doc);
+            Assert.Throws<InvalidOperationException>(() => XmlSignatureUtils.CheckSignature(doc));
         }
 
         [Test]        
