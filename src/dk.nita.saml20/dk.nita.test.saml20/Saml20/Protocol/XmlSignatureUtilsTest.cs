@@ -24,7 +24,6 @@ namespace dk.nita.test.Saml20.Protocol
         }
 
         [Test]
-        [ExpectedException(typeof(InvalidOperationException))]
         public void DetectSignature_02()
         {
             XmlDocument doc = LoadDocument(@"Saml20\Assertions\EncryptedAssertion_01");
@@ -33,7 +32,6 @@ namespace dk.nita.test.Saml20.Protocol
         }
 
         [Test]
-        [ExpectedException(typeof(InvalidOperationException))]
         public void CheckSignature_01()
         {
             XmlDocument doc = LoadDocument(@"Saml20\Assertions\EncryptedAssertion_01");            

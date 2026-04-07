@@ -2,10 +2,10 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.IO.Compression;
+using System.Net;
 using System.Security.Cryptography;
 using System.Security.Cryptography.Xml;
 using System.Text;
-using System.Web;
 using System.Xml;
 using dk.nita.saml20.Bindings.SignatureProviders;
 using dk.nita.saml20.Schema.Metadata;
@@ -30,7 +30,7 @@ namespace dk.nita.saml20.Bindings
             Dictionary<string, string> paramDict = ToDictionary(uri);
 
             foreach (KeyValuePair<string, string> param in paramDict)
-                SetParam(param.Key, HttpUtility.UrlDecode(param.Value));
+                SetParam(param.Key, WebUtility.UrlDecode(param.Value));
 
             // If the message is signed, save the original, encoded parameters so that the signature can be verified.
             if (IsSigned)

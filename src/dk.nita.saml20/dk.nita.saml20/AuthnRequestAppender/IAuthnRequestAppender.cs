@@ -1,4 +1,4 @@
-﻿using System.Web;
+﻿using Microsoft.AspNetCore.Http;
 
 namespace dk.nita.saml20.AuthnRequestAppender
 {

@@ -1,5 +1,5 @@
-﻿using System;
-using System.Web;
+using System;
+using Microsoft.AspNetCore.Http;
 using dk.nita.saml20.config;
 using dk.nita.saml20.Utils;
 
@@ -42,15 +42,13 @@ namespace dk.nita.saml20.Session
         private static readonly ISessionStoreProvider SessionStoreProvider;
 
         /// <summary>
-        /// There current user session. User session is read from cookie. If it doesn't exists, null is returned
+        /// The current user session. User session is read from cookie. If it doesn''t exist, null is returned.
         /// </summary>
-        /// <returns></returns>
         internal static UserSession CurrentSession
         {
             get
             {
-                //If not in context of a web requests, there can't be a current session
-                if (HttpContext.Current != null)
+                if (SamlHttpContextAccessor.Current != null)
                 {
                     var sessionId = GetSessionIdFromCookie();
 
@@ -66,9 +64,9 @@ namespace dk.nita.saml20.Session
 
         internal static void CreateSessionIfNotExists()
         {
-            if (HttpContext.Current == null)
+            if (SamlHttpContextAccessor.Current == null)
             {
-                throw new InvalidOperationException("A session cannot be created when running outside the context of a asp.net request");
+                throw new InvalidOperationException("A session cannot be created when running outside the context of an ASP.NET Core request");
             }
 
             var sessionId = GetSessionIdFromCookie();
@@ -82,7 +80,6 @@ namespace dk.nita.saml20.Session
         /// <summary>
         /// Associates the given userId with the current session id
         /// </summary>
-        /// <param name="userId"></param>
         internal static void AssociateUserIdWithCurrentSession(string userId)
         {
             if (userId == null) throw new ArgumentNullException(nameof(userId));
@@ -92,7 +89,6 @@ namespace dk.nita.saml20.Session
         /// <summary>
         /// Abandons all sessions associated with the given userId
         /// </summary>
-        /// <param name="userId"></param>
         internal static void AbandonAllSessions(string userId)
         {
             if (userId == null) throw new ArgumentNullException(nameof(userId));
@@ -101,37 +97,36 @@ namespace dk.nita.saml20.Session
 
         private static Guid? GetSessionIdFromCookie()
         {
-            HttpCookie httpCookie = HttpContext.Current.Request.Cookies[GetSessionCookieName()];
-            if (httpCookie != null)
-                return new Guid(httpCookie.Value);
+            string cookieValue = SamlHttpContextAccessor.Current.Request.Cookies[GetSessionCookieName()];
+            if (cookieValue != null)
+                return new Guid(cookieValue);
 
             return null;
         }
 
         private static void WriteSessionCookie()
         {
-            if (!HttpContext.Current.Request.IsSecureConnection)
+            if (!SamlHttpContextAccessor.Current.Request.IsHttps)
             {
                 throw new Saml20Exception("The service provider must use https since session cookie is not allowed on a unsecure transport");
             }
 
             var sessionId = Guid.NewGuid();
+            var cookieName = GetSessionCookieName();
 
-            HttpContext.Current.Request.Cookies.Remove(GetSessionCookieName()); // Remove cookie from request when creating a new session id. This is necessary because adding a cookie with the same name does not override cookies in the request.
-
-            var httpCookie = new HttpCookie(GetSessionCookieName(), sessionId.ToString())
+            var cookieOptions = new CookieOptions
             {
                 Secure = true,
                 HttpOnly = true,
             };
 
-            var shouldSendSameSiteNoneCookie = BrowserSupportUtil.ShouldSendSameSiteNone(HttpContext.Current.Request.UserAgent);
+            var shouldSendSameSiteNoneCookie = BrowserSupportUtil.ShouldSendSameSiteNone(SamlHttpContextAccessor.Current.Request.Headers.UserAgent.ToString());
             if (shouldSendSameSiteNoneCookie)
             {
-                httpCookie.SameSite = SameSiteMode.None;
+                cookieOptions.SameSite = SameSiteMode.None;
             }
 
-            HttpContext.Current.Response.Cookies.Add(httpCookie); // When a cookie is added to the response it is automatically added to the request. Thus, SessionId is available immeditly when reading cookies from the request.
+            SamlHttpContextAccessor.Current.Response.Cookies.Append(cookieName, sessionId.ToString(), cookieOptions);
         }
 
         private static string GetSessionCookieName()
@@ -140,7 +135,7 @@ namespace dk.nita.saml20.Session
 
             if (string.IsNullOrWhiteSpace(name))
             {
-                throw new Saml20Exception($"The session cookie name '{name}' is not valid. Ensure a valid cookie name is set in the configuration element 'SessionCookieName'");
+                throw new Saml20Exception($"The session cookie name ''{name}'' is not valid. Ensure a valid cookie name is set in the configuration element ''SessionCookieName''");
             }
 
             return name;
@@ -149,7 +144,6 @@ namespace dk.nita.saml20.Session
         /// <summary>
         /// Asserts that the user has a session.
         /// </summary>
-        /// <exception cref="Saml20Exception">Is thrown if no session exists.</exception>
         internal static void AssertSessionExists()
         {
             if (!DoesSessionExists())
@@ -157,23 +151,23 @@ namespace dk.nita.saml20.Session
                 if (CurrentSession == null)
                 {
                     throw new Saml20Exception(
-                        "The user doesn't have a session in context of a cookie ... which is required at this point in the pipeline. Plausible reason is that OIOSAML.Net is not running under https. The session cookie is marked with 'secure only'.");
+                        "The user doesn''t have a session in context of a cookie ... which is required at this point in the pipeline. Plausible reason is that OIOSAML.Net is not running under https. The session cookie is marked with ''secure only''.");
                 }
                 else if (!SessionStoreProvider.DoesSessionExists(CurrentSession.SessionId))
                 {
                     throw new Saml20Exception(
-                        "The user doesn't have a session in session store which is required at this point in the pipeline. Plausible reason is that the user's session has expired. \nIf the application is running in a web farm ensure distributed sessions is supported by the session store provider.");
+                        "The user doesn''t have a session in session store which is required at this point in the pipeline. Plausible reason is that the user''s session has expired. \nIf the application is running in a web farm ensure distributed sessions is supported by the session store provider.");
                 }
                 else
                 {
-                    throw new Saml20Exception("The user doesn't have a session for unknown reasons.");
+                    throw new Saml20Exception("The user doesn''t have a session for unknown reasons.");
                 }
             }
         }
 
         /// <summary>
-        /// Checks whether or not the user has a session
-        /// SamlAssertionLite is the only item in the session store after a succesful login flow. This is what implicit makes the session exist.
+        /// Checks whether or not the user has a session.
+        /// SamlAssertionLite is the only item in the session store after a successful login flow.
         /// </summary>
         internal static bool DoesSessionExists()
         {

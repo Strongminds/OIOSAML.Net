@@ -1,5 +1,5 @@
 ﻿using System.Collections.Generic;
-using System.Web;
+using Microsoft.AspNetCore.Http;
 using dk.nita.saml20.Identity;
 using dk.nita.saml20.session;
 using dk.nita.saml20.config;

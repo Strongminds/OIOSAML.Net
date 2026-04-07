@@ -1,7 +1,7 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Text;
-using System.Web;
+using System.Net;
 using dk.nita.saml20.config;
 using dk.nita.saml20.protocol;
 
@@ -52,7 +52,7 @@ namespace dk.nita.saml20.Utils
         public static string GetIDPLoginUrl(string idpId, bool forceAuthn, bool isPassive, string desiredNsisLoa, string desiredProfile, string appSwitchPlatform = null)
         {
             var defaultUrl =  string.Format("{0}?{1}={2}&{3}={4}&{5}={6}&{7}={8}&{9}={10}", SAML20FederationConfig.GetConfig().ServiceProvider.SignOnEndpoint.localPath,
-                Saml20SignonHandler.IDPChoiceParameterName, HttpUtility.UrlEncode(idpId),
+                Saml20SignonHandler.IDPChoiceParameterName, WebUtility.UrlEncode(idpId),
                 Saml20SignonHandler.IDPForceAuthn, forceAuthn.ToString(),
                 Saml20SignonHandler.IDPIsPassive, isPassive.ToString(),
                 Saml20SignonHandler.NsisLoa, desiredNsisLoa,

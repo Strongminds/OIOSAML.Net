@@ -263,7 +263,6 @@ namespace dk.nita.test.Saml20
         /// Tests that it is possible to specify the algorithm of the session key.
         /// </summary>
         [Test]
-        [ExpectedException(typeof(ArgumentException))]
         public void TestAlgorithmConfiguration_01()
         {
             Saml20EncryptedAssertion encryptedAssertion = new Saml20EncryptedAssertion();

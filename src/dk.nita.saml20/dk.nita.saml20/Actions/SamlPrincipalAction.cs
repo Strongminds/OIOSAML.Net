@@ -1,10 +1,10 @@
-﻿using System.Web;
-using System.Web.Security;
+using Microsoft.AspNetCore.Http;
 using dk.nita.saml20.session;
 using dk.nita.saml20.identity;
 using dk.nita.saml20.protocol;
 using System.Security.Principal;
 using dk.nita.saml20.Identity;
+using dk.nita.saml20.Utils;
 
 namespace dk.nita.saml20.Actions
 {
@@ -13,7 +13,6 @@ namespace dk.nita.saml20.Actions
     /// </summary>
     public class SamlPrincipalAction : IAction
     {
-
         /// <summary>
         /// The default action name
         /// </summary>
@@ -22,24 +21,21 @@ namespace dk.nita.saml20.Actions
         /// <summary>
         /// Action performed during login.
         /// </summary>
-        /// <param name="handler">The handler initiating the call.</param>
-        /// <param name="context">The current http context.</param>
-        /// <param name="assertion">The saml assertion of the currently logged in user.</param>
         public void LoginAction(AbstractEndpointHandler handler, HttpContext context, Saml20Assertion assertion)
         {
-            FormsAuthentication.SetAuthCookie(Saml20PrincipalCache.GetPrincipal().Identity.Name, false);  
+            // FormsAuthentication is not available in .NET Core. Auth cookie management is handled by the hosting application.
         }
 
         /// <summary>
         /// Action performed during logout.
         /// </summary>
-        /// <param name="handler">The handler.</param>
-        /// <param name="context">The context.</param>
-        /// <param name="IdPInitiated">During IdP initiated logout some actions such as redirecting should not be performed</param>
         public void LogoutAction(AbstractEndpointHandler handler, HttpContext context, bool IdPInitiated)
         {
-            FormsAuthentication.SignOut();
-            HttpContext.Current.User = new GenericPrincipal(new GenericIdentity(string.Empty), null); // Makes User.Identity.IsAuthenticated false in the current request.
+            // Set anonymous principal to make User.Identity.IsAuthenticated false in the current request.
+            if (SamlHttpContextAccessor.Current != null)
+            {
+                SamlHttpContextAccessor.Current.User = new GenericPrincipal(new GenericIdentity(string.Empty), null);
+            }
         }
 
         /// <summary>
@@ -55,7 +51,6 @@ namespace dk.nita.saml20.Actions
         /// <summary>
         /// Gets or sets the name of the action.
         /// </summary>
-        /// <value>The name.</value>
         public string Name
         {
             get

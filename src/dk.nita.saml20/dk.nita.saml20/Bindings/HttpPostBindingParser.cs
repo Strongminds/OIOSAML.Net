@@ -1,7 +1,7 @@
 using System;
 using System.Text;
 using System.Collections.Generic;
-using System.Web;
+using Microsoft.AspNetCore.Http;
 using System.Xml;
 using System.Security.Cryptography;
 using System.Security.Cryptography.Xml;
@@ -41,14 +41,14 @@ namespace dk.nita.saml20.Bindings
         {
             string base64 = string.Empty;
 
-            if (_context.Request.Params["SAMLRequest"] != null)
+            if (_context.GetRequestParam("SAMLRequest") != null)
             {
-                base64 = _context.Request.Params["SAMLRequest"];
+                base64 = _context.GetRequestParam("SAMLRequest");
                 _isRequest = true;
             }
-            if (_context.Request.Params["SAMLResponse"] != null)
+            if (_context.GetRequestParam("SAMLResponse") != null)
             {
-                base64 = _context.Request.Params["SAMLResponse"];
+                base64 = _context.GetRequestParam("SAMLResponse");
                 _isResponse = true;
             }
 

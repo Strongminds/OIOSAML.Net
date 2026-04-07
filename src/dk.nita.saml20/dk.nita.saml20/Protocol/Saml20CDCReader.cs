@@ -1,5 +1,5 @@
-﻿using System.Diagnostics;
-using System.Web;
+using System.Diagnostics;
+using Microsoft.AspNetCore.Http;
 using System;
 using dk.nita.saml20.config;
 using dk.nita.saml20.Logging;
@@ -36,17 +36,16 @@ namespace dk.nita.saml20.protocol
 
                 string returnUrl = config.ServiceProvider.Server + endp.localPath + "?r=1";
 
-                HttpCookie samlIdp = context.Request.Cookies[CommonDomainCookie.COMMON_DOMAIN_COOKIE_NAME];
+                string samlIdpValue = context.Request.Cookies[CommonDomainCookie.COMMON_DOMAIN_COOKIE_NAME];
 
-                if (samlIdp != null)
+                if (samlIdpValue != null)
                 {
-                    returnUrl += "&_saml_idp=" + HttpUtility.UrlEncode(samlIdp.Value);
+                    returnUrl += "&_saml_idp=" + System.Net.WebUtility.UrlEncode(samlIdpValue);
 
-                    if (Trace.ShouldTrace(TraceEventType.Information))
-                        Trace.TraceData(TraceEventType.Information, string.Format(Tracing.CDC, samlIdp.Value));
+                    if (Trace.ShouldTrace(TraceEventType.Information)) Trace.TraceData(TraceEventType.Information, string.Format(Tracing.CDC, samlIdpValue));
 
                     AuditLogging.logEntry(Direction.OUT, Operation.AUTHNREQUEST_REDIRECT,
-                                             "Redirection to Signon endpoint found in Common Domain Cookie: " + samlIdp.Value);
+                                             "Redirection to Signon endpoint found in Common Domain Cookie: " + samlIdpValue);
                 }
                 else
                 {
@@ -62,3 +61,5 @@ namespace dk.nita.saml20.protocol
         }
     }
 }
+
+

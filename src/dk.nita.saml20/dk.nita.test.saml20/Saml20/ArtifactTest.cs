@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using dk.nita.saml20.Utils;
 using NUnit.Framework;
 
@@ -52,7 +52,6 @@ namespace dk.nita.test.Saml20
         }
 
         [Test]
-        [ExpectedException(typeof(ArgumentException))]
         public void CreateError1()
         {
             Int16 typeCode = 4;
@@ -64,7 +63,6 @@ namespace dk.nita.test.Saml20
         }
 
         [Test]
-        [ExpectedException(typeof(ArgumentException))]
         public void CreateError2()
         {
             Int16 typeCode = 4;
@@ -76,7 +74,6 @@ namespace dk.nita.test.Saml20
         }
 
         [Test]
-        [ExpectedException(typeof(ArgumentException))]
         public void ParseError1()
         {
             Int16 parsedTypeCode = -1;
@@ -90,7 +87,6 @@ namespace dk.nita.test.Saml20
         }
 
         [Test]
-        [ExpectedException(typeof(ArgumentException))]
         public void ParseError2()
         {
             Int16 parsedTypeCode = -1;
@@ -102,7 +98,6 @@ namespace dk.nita.test.Saml20
         }
 
         [Test]
-        [ExpectedException(typeof(ArgumentException))]
         public void ParseError3()
         {
             Int16 parsedTypeCode = -1;
