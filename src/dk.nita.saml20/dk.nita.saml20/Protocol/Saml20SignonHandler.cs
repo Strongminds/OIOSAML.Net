@@ -88,6 +88,10 @@ namespace dk.nita.saml20.protocol
 
             if (!string.IsNullOrEmpty(context.GetRequestParam("SamlResponse")))
             {
+                // Recover the session ID from the RelayState if the browser did not send
+                // the session cookie (e.g. blocked by SameSite policy on a cross-site POST).
+                SessionStore.TryRecoverSessionFromRelayState(context.GetRequestParam("RelayState"));
+
                 SessionStore.AssertSessionExists();
 
                 HandleResponse(context);
@@ -896,9 +900,10 @@ namespace dk.nita.saml20.protocol
                 Trace.TraceData(TraceEventType.Information, string.Format(Tracing.SendAuthnRequest, Saml20Constants.ProtocolBindings.HTTP_Redirect, idpEndpoint.Id));
 
                 HttpRedirectBindingBuilder builder = new HttpRedirectBindingBuilder();
-                builder.signingKey = _certificate.PrivateKey;
+                builder.signingKey = _certificate.GetRSAPrivateKey();
                 builder.Request = request.GetXml().OuterXml;
                 builder.ShaHashingAlgorithm = shaHashingAlgorithm;
+                builder.RelayState = SessionStore.BuildRelayState();
                 string s = request.Destination + "?" + builder.ToQuery();
 
                 AuditLogging.logEntry(Direction.OUT, Operation.AUTHNREQUEST_REDIRECT, "Redirecting user to IdP for authentication", builder.Request);
@@ -920,6 +925,7 @@ namespace dk.nita.saml20.protocol
                 var signatureProvider = SignatureProviderFactory.CreateFromShaHashingAlgorithmName(shaHashingAlgorithm);
                 signatureProvider.SignAssertion(req, request.ID, signingCertificate);
                 builder.Request = req.OuterXml;
+                builder.RelayState = SessionStore.BuildRelayState();
                 AuditLogging.logEntry(Direction.OUT, Operation.AUTHNREQUEST_POST);
 
                 builder.ProcessRequest(context);

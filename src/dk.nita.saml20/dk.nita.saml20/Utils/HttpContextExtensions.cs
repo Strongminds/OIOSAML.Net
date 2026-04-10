@@ -11,7 +11,7 @@ namespace dk.nita.saml20.Utils
         internal static string GetRequestParam(this HttpContext context, string key)
         {
             return context.Request.Query[key].FirstOrDefault()
-                ?? context.Request.Form[key].FirstOrDefault();
+                ?? (context.Request.HasFormContentType ? context.Request.Form[key].FirstOrDefault() : null);
         }
 
         /// <summary>
@@ -20,7 +20,7 @@ namespace dk.nita.saml20.Utils
         internal static string GetRequestParam(this HttpRequest request, string key)
         {
             return request.Query[key].FirstOrDefault()
-                ?? request.Form[key].FirstOrDefault();
+                ?? (request.HasFormContentType ? request.Form[key].FirstOrDefault() : null);
         }
     }
 }
