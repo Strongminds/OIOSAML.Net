@@ -1,4 +1,7 @@
 using System;
+using System.IO;
+using System.IO.Compression;
+using System.Text;
 using System.Threading;
 using Microsoft.AspNetCore.Http;
 using dk.nita.saml20.config;
@@ -112,17 +115,11 @@ namespace dk.nita.saml20.Session
             //    This works even when SamlHttpContextAccessor.Current is null or mismatched.
             var asyncLocal = _relayStateRecoveredSessionId.Value;
             if (asyncLocal.HasValue)
-            {
-                System.Console.Error.WriteLine($"[OIOSAML] GetSessionIdFromCookie: returning AsyncLocal session {asyncLocal.Value:D}");
                 return asyncLocal;
-            }
 
             var context = SamlHttpContextAccessor.Current;
             if (context == null)
-            {
-                System.Console.Error.WriteLine("[OIOSAML] GetSessionIdFromCookie: SamlHttpContextAccessor.Current is null");
                 return null;
-            }
 
             // 2. HttpContext.Items — set by WriteSessionCookie() within the same request so the
             //    newly-written cookie is visible before the browser sends it back.
@@ -174,39 +171,59 @@ namespace dk.nita.saml20.Session
         internal static string BuildRelayState()
         {
             var session = CurrentSession;
-            var result = session != null ? RelayStateSessionPrefix + session.SessionId.ToString("D") : null;
-            System.Console.Error.WriteLine($"[OIOSAML] BuildRelayState: session={(session == null ? "null" : session.SessionId.ToString("D"))}, result='{result ?? "<null>"}'");
-            return result;
+            return session != null ? RelayStateSessionPrefix + session.SessionId.ToString("D") : null;
         }
 
         /// <summary>
-        /// If <paramref name="relayState"/> starts with the session prefix, injects the embedded
-        /// session ID into both <see cref="AsyncLocal{T}"/> and <see cref="HttpContext.Items"/> so
-        /// <see cref="CurrentSession"/> can find it within this request even if the browser cookie
-        /// is absent.
+        /// If <paramref name="relayState"/> contains our embedded session prefix (either as plain
+        /// text or DEFLATE+base64-encoded as produced by HttpRedirectBindingBuilder for requests),
+        /// injects the recovered session ID into the AsyncLocal and HttpContext.Items so
+        /// <see cref="CurrentSession"/> can find it even if the browser session cookie was blocked.
         /// </summary>
         internal static void TryRecoverSessionFromRelayState(string relayState)
         {
-            System.Console.Error.WriteLine($"[OIOSAML] TryRecoverSessionFromRelayState: relayState='{relayState ?? "<null>"}'");
-            System.Console.Error.WriteLine($"[OIOSAML] TryRecoverSessionFromRelayState: SamlHttpContextAccessor.Current={(SamlHttpContextAccessor.Current == null ? "NULL" : "non-null")}");
-
             if (string.IsNullOrEmpty(relayState)) return;
-            if (!relayState.StartsWith(RelayStateSessionPrefix, StringComparison.Ordinal)) return;
 
-            var sessionIdStr = relayState.Substring(RelayStateSessionPrefix.Length);
+            // HttpRedirectBindingBuilder DEFLATE-compresses and base64-encodes the RelayState
+            // value before embedding it in the AuthnRequest URL.  The IdP echoes the encoded
+            // blob back unchanged in the POST form field, so we must decode it first.
+            var decoded = TryDecodeRelayState(relayState);
+            if (!decoded.StartsWith(RelayStateSessionPrefix, StringComparison.Ordinal)) return;
+
+            var sessionIdStr = decoded.Substring(RelayStateSessionPrefix.Length);
             if (Guid.TryParse(sessionIdStr, out var sessionId))
             {
                 // Primary: AsyncLocal — works even if SamlHttpContextAccessor.Current is null.
                 _relayStateRecoveredSessionId.Value = sessionId;
-                System.Console.Error.WriteLine($"[OIOSAML] TryRecoverSessionFromRelayState: set AsyncLocal session {sessionId:D}");
 
                 // Belt-and-suspenders: also set via IHttpContextAccessor if available.
                 if (SamlHttpContextAccessor.Current != null)
                     SamlHttpContextAccessor.Current.Items[PendingSessionIdItemKey] = sessionId;
             }
-            else
+        }
+
+        /// <summary>
+        /// Returns the plain-text relay state value.  HttpRedirectBindingBuilder encodes relay
+        /// state with DEFLATE + base64 for requests; this reverses that encoding when present.
+        /// </summary>
+        private static string TryDecodeRelayState(string relayState)
+        {
+            // Already plain text — nothing to decode.
+            if (relayState.StartsWith(RelayStateSessionPrefix, StringComparison.Ordinal))
+                return relayState;
+
+            try
             {
-                System.Console.Error.WriteLine($"[OIOSAML] TryRecoverSessionFromRelayState: Guid.TryParse failed for '{sessionIdStr}'");
+                var compressed = Convert.FromBase64String(relayState);
+                using var input = new MemoryStream(compressed);
+                using var deflate = new DeflateStream(input, CompressionMode.Decompress);
+                using var reader = new StreamReader(deflate, Encoding.UTF8);
+                return reader.ReadToEnd();
+            }
+            catch
+            {
+                // Not base64+deflate encoded — return original.
+                return relayState;
             }
         }
 
@@ -227,7 +244,6 @@ namespace dk.nita.saml20.Session
         /// </summary>
         internal static void AssertSessionExists()
         {
-            System.Console.Error.WriteLine($"[OIOSAML] AssertSessionExists: AsyncLocal={_relayStateRecoveredSessionId.Value?.ToString("D") ?? "null"}, SamlHttpContextAccessor.Current={(SamlHttpContextAccessor.Current == null ? "NULL" : "non-null")}, CurrentSession={(CurrentSession == null ? "null" : CurrentSession.SessionId.ToString("D"))}");
             if (!DoesSessionExists())
             {
                 if (CurrentSession == null)
