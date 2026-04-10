@@ -55,6 +55,9 @@ namespace dk.nita.saml20.protocol
         /// <param name="context">An <see cref="T:System.Web.HttpContext"/> object that provides references to the intrinsic server objects (for example, Request, Response, Session, and Server) used to service HTTP requests.</param>
         public sealed override void ProcessRequest(HttpContext context)
         {
+            // Pin the explicit context so SamlHttpContextAccessor.Current returns the right
+            // HttpContext throughout this request, even if IHttpContextAccessor is misconfigured.
+            SamlHttpContextAccessor.SetExplicitContext(context);
             try
             {
                 CheckConfiguration(context);

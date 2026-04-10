@@ -113,14 +113,14 @@ namespace dk.nita.saml20.Session
             var asyncLocal = _relayStateRecoveredSessionId.Value;
             if (asyncLocal.HasValue)
             {
-                System.Diagnostics.Debug.WriteLine($"[OIOSAML] GetSessionIdFromCookie: returning AsyncLocal session {asyncLocal.Value:D}");
+                System.Console.Error.WriteLine($"[OIOSAML] GetSessionIdFromCookie: returning AsyncLocal session {asyncLocal.Value:D}");
                 return asyncLocal;
             }
 
             var context = SamlHttpContextAccessor.Current;
             if (context == null)
             {
-                System.Diagnostics.Debug.WriteLine("[OIOSAML] GetSessionIdFromCookie: SamlHttpContextAccessor.Current is null");
+                System.Console.Error.WriteLine("[OIOSAML] GetSessionIdFromCookie: SamlHttpContextAccessor.Current is null");
                 return null;
             }
 
@@ -175,7 +175,7 @@ namespace dk.nita.saml20.Session
         {
             var session = CurrentSession;
             var result = session != null ? RelayStateSessionPrefix + session.SessionId.ToString("D") : null;
-            System.Diagnostics.Debug.WriteLine($"[OIOSAML] BuildRelayState: session={(session == null ? "null" : session.SessionId.ToString("D"))}, result='{result ?? "<null>"}'");
+            System.Console.Error.WriteLine($"[OIOSAML] BuildRelayState: session={(session == null ? "null" : session.SessionId.ToString("D"))}, result='{result ?? "<null>"}'");
             return result;
         }
 
@@ -187,8 +187,8 @@ namespace dk.nita.saml20.Session
         /// </summary>
         internal static void TryRecoverSessionFromRelayState(string relayState)
         {
-            System.Diagnostics.Debug.WriteLine($"[OIOSAML] TryRecoverSessionFromRelayState: relayState='{relayState ?? "<null>"}'");
-            System.Diagnostics.Debug.WriteLine($"[OIOSAML] TryRecoverSessionFromRelayState: SamlHttpContextAccessor.Current={(SamlHttpContextAccessor.Current == null ? "NULL" : "non-null")}");
+            System.Console.Error.WriteLine($"[OIOSAML] TryRecoverSessionFromRelayState: relayState='{relayState ?? "<null>"}'");
+            System.Console.Error.WriteLine($"[OIOSAML] TryRecoverSessionFromRelayState: SamlHttpContextAccessor.Current={(SamlHttpContextAccessor.Current == null ? "NULL" : "non-null")}");
 
             if (string.IsNullOrEmpty(relayState)) return;
             if (!relayState.StartsWith(RelayStateSessionPrefix, StringComparison.Ordinal)) return;
@@ -198,7 +198,7 @@ namespace dk.nita.saml20.Session
             {
                 // Primary: AsyncLocal — works even if SamlHttpContextAccessor.Current is null.
                 _relayStateRecoveredSessionId.Value = sessionId;
-                System.Diagnostics.Debug.WriteLine($"[OIOSAML] TryRecoverSessionFromRelayState: set AsyncLocal session {sessionId:D}");
+                System.Console.Error.WriteLine($"[OIOSAML] TryRecoverSessionFromRelayState: set AsyncLocal session {sessionId:D}");
 
                 // Belt-and-suspenders: also set via IHttpContextAccessor if available.
                 if (SamlHttpContextAccessor.Current != null)
@@ -206,7 +206,7 @@ namespace dk.nita.saml20.Session
             }
             else
             {
-                System.Diagnostics.Debug.WriteLine($"[OIOSAML] TryRecoverSessionFromRelayState: Guid.TryParse failed for '{sessionIdStr}'");
+                System.Console.Error.WriteLine($"[OIOSAML] TryRecoverSessionFromRelayState: Guid.TryParse failed for '{sessionIdStr}'");
             }
         }
 
@@ -227,7 +227,7 @@ namespace dk.nita.saml20.Session
         /// </summary>
         internal static void AssertSessionExists()
         {
-            System.Diagnostics.Debug.WriteLine($"[OIOSAML] AssertSessionExists: AsyncLocal={_relayStateRecoveredSessionId.Value?.ToString("D") ?? "null"}, SamlHttpContextAccessor.Current={(SamlHttpContextAccessor.Current == null ? "NULL" : "non-null")}, CurrentSession={(CurrentSession == null ? "null" : CurrentSession.SessionId.ToString("D"))}");
+            System.Console.Error.WriteLine($"[OIOSAML] AssertSessionExists: AsyncLocal={_relayStateRecoveredSessionId.Value?.ToString("D") ?? "null"}, SamlHttpContextAccessor.Current={(SamlHttpContextAccessor.Current == null ? "NULL" : "non-null")}, CurrentSession={(CurrentSession == null ? "null" : CurrentSession.SessionId.ToString("D"))}");
             if (!DoesSessionExists())
             {
                 if (CurrentSession == null)
