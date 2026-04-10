@@ -21,11 +21,13 @@ namespace dk.nita.saml20.Utils
         }
 
         /// <summary>
-        /// Called by Saml20AbstractEndpointHandler.ProcessRequest before invoking Handle().
+        /// Called by Saml20AbstractEndpointHandler.ProcessRequest before invoking Handle(), and
+        /// by host applications when they need to pin a specific HttpContext for SAML session
+        /// lookups (e.g. from a DI factory that runs before the SAML handler sets this).
         /// Stores the request context in an AsyncLocal so all static session helpers on this
         /// execution path see the correct HttpContext regardless of IHttpContextAccessor state.
         /// </summary>
-        internal static void SetExplicitContext(HttpContext context)
+        public static void SetExplicitContext(HttpContext context)
         {
             _explicitContext.Value = context;
         }
