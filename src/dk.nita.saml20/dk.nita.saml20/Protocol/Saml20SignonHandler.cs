@@ -726,6 +726,7 @@ namespace dk.nita.saml20.protocol
 
             // The assertion is what keeps the session alive. If it is ever removed ... the session will appear as removed in the SessionStoreProvider because Saml20AssertionLite is the only thing kept in session store when login flow is completed..
             SessionStore.CurrentSession[SessionConstants.Saml20AssertionLite] = Saml20AssertionLite.ToLite(assertion);
+            System.Console.Error.WriteLine($"[OIOSAML] DoLogin: stored assertion under sessionId={SessionStore.CurrentSession?.SessionId:D}");
 
             if (Trace.ShouldTrace(TraceEventType.Information))
             {
