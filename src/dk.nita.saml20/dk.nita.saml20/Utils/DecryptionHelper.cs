@@ -1,12 +1,9 @@
-﻿using Org.BouncyCastle.Crypto.Engines;
-using Org.BouncyCastle.Crypto.Encodings;
-using Org.BouncyCastle.Crypto.Parameters;
-using Org.BouncyCastle.Crypto.Digests;
-using Org.BouncyCastle.Math;
+﻿using System;
 using System.Security.Cryptography;
-using Org.BouncyCastle.Crypto.Modes;
-using System;
 using System.Security.Cryptography.Xml;
+using Org.BouncyCastle.Crypto.Engines;
+using Org.BouncyCastle.Crypto.Modes;
+using Org.BouncyCastle.Crypto.Parameters;
 
 namespace dk.nita.saml20.Utils
 {
@@ -21,33 +18,14 @@ namespace dk.nita.saml20.Utils
         public const string AesGcmAlgorithmName = "http://www.w3.org/2009/xmlenc11#aes256-gcm";
 
         /// <summary>
-        /// Decrypts private certificate with support for OaepSha256 format
+        /// Decrypts an RSA-OAEP-SHA256 encrypted key using the supplied private RSA key.
+        /// Uses the native .NET RSA implementation to avoid exporting private key material,
+        /// which fails on CNG key stores unless the key is explicitly marked as exportable.
+        /// The cipher (OAEP-SHA256 + MGF1-SHA256) is identical to the previous BouncyCastle path.
         /// </summary>
-        /// <param name="cipherValue">Cipher to be decrypted</param>
-        /// <param name="rsa">RSA key parameters</param>
-        /// <returns></returns>
         public static byte[] DecryptKeyWithOaepSha256(byte[] cipherValue, RSA rsa)
         {
-            // Export RSA parameters
-            var rsaParams = rsa.ExportParameters(true);
-
-            // Convert RSAParameters to private key key parameters
-            var keyParams = new RsaPrivateCrtKeyParameters(
-                new BigInteger(1, rsaParams.Modulus),
-                new BigInteger(1, rsaParams.Exponent),
-                new BigInteger(1, rsaParams.D),
-                new BigInteger(1, rsaParams.P),
-                new BigInteger(1, rsaParams.Q),
-                new BigInteger(1, rsaParams.DP),
-                new BigInteger(1, rsaParams.DQ),
-                new BigInteger(1, rsaParams.InverseQ)
-            );
-
-            // Create the RSA engine with OAEP using SHA-256
-            var engine = new OaepEncoding(new RsaEngine(), new Sha256Digest(), new Sha256Digest(), null);
-            engine.Init(false, keyParams); // false for decryption
-
-            return engine.ProcessBlock(cipherValue, 0, cipherValue.Length);
+            return rsa.Decrypt(cipherValue, RSAEncryptionPadding.OaepSHA256);
         }
 
         /// <summary>
