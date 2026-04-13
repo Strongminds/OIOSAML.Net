@@ -726,7 +726,6 @@ namespace dk.nita.saml20.protocol
 
             // The assertion is what keeps the session alive. If it is ever removed ... the session will appear as removed in the SessionStoreProvider because Saml20AssertionLite is the only thing kept in session store when login flow is completed..
             SessionStore.CurrentSession[SessionConstants.Saml20AssertionLite] = Saml20AssertionLite.ToLite(assertion);
-            System.Console.Error.WriteLine($"[OIOSAML] DoLogin: stored assertion under sessionId={SessionStore.CurrentSession?.SessionId:D}");
 
             // Re-write the session cookie in this POST response so the browser will include it
             // in the subsequent GET redirect (e.g. /SSO). On IdP POST-backs the browser cannot

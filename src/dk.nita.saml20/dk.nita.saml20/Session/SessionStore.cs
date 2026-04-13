@@ -116,14 +116,12 @@ namespace dk.nita.saml20.Session
             var asyncLocal = _relayStateRecoveredSessionId.Value;
             if (asyncLocal.HasValue)
             {
-                System.Console.Error.WriteLine($"[OIOSAML] GetSessionIdFromCookie: AsyncLocal={asyncLocal.Value:D}");
                 return asyncLocal;
             }
 
             var context = SamlHttpContextAccessor.Current;
             if (context == null)
             {
-                System.Console.Error.WriteLine("[OIOSAML] GetSessionIdFromCookie: context=null");
                 return null;
             }
 
@@ -131,13 +129,11 @@ namespace dk.nita.saml20.Session
             //    newly-written cookie is visible before the browser sends it back.
             if (context.Items.TryGetValue(PendingSessionIdItemKey, out var pending) && pending is Guid pendingId)
             {
-                System.Console.Error.WriteLine($"[OIOSAML] GetSessionIdFromCookie: Items={pendingId:D}");
                 return pendingId;
             }
 
             // 3. Cookie sent by the browser on subsequent requests.
             string cookieValue = context.Request.Cookies[GetSessionCookieName()];
-            System.Console.Error.WriteLine($"[OIOSAML] GetSessionIdFromCookie: path={context.Request.Path} cookie={cookieValue ?? "<absent>"}");
             if (cookieValue != null)
                 return new Guid(cookieValue);
 
@@ -169,8 +165,6 @@ namespace dk.nita.saml20.Session
             context.Response.Cookies.Append(cookieName, session.SessionId.ToString(), cookieOptions);
             // Also update Items so CurrentSession finds the ID within this same request
             context.Items[PendingSessionIdItemKey] = session.SessionId;
-
-            System.Console.Error.WriteLine($"[OIOSAML] RefreshSessionCookie: sessionId={session.SessionId:D} path={context.Request.Path}");
         }
 
         private static void WriteSessionCookie()
@@ -196,7 +190,6 @@ namespace dk.nita.saml20.Session
             }
 
             SamlHttpContextAccessor.Current.Response.Cookies.Append(cookieName, sessionId.ToString(), cookieOptions);
-            System.Console.Error.WriteLine($"[OIOSAML] WriteSessionCookie: name={cookieName} sessionId={sessionId:D} sameSite={cookieOptions.SameSite} path={SamlHttpContextAccessor.Current.Request.Path} isHttps={SamlHttpContextAccessor.Current.Request.IsHttps} responseHasStarted={SamlHttpContextAccessor.Current.Response.HasStarted}");
 
             // Also store the session ID in HttpContext.Items so CurrentSession can find it
             // within the same request before the browser echoes the cookie back.
@@ -312,12 +305,9 @@ namespace dk.nita.saml20.Session
             var session = CurrentSession;
             if (session == null)
             {
-                System.Console.Error.WriteLine("[OIOSAML] DoesSessionExists: CurrentSession=null");
                 return false;
             }
-            var exists = SessionStoreProvider.DoesSessionExists(session.SessionId);
-            System.Console.Error.WriteLine($"[OIOSAML] DoesSessionExists: sessionId={session.SessionId:D} exists={exists}");
-            return exists;
+            return SessionStoreProvider.DoesSessionExists(session.SessionId);
         }
     }
 }
