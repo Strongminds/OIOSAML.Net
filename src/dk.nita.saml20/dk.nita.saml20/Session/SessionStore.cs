@@ -144,6 +144,35 @@ namespace dk.nita.saml20.Session
             return null;
         }
 
+        /// <summary>
+        /// Re-writes the current session ID as a cookie in the ongoing response.
+        /// Call this after processing an IdP POST-back (where the browser cannot send the session
+        /// cookie due to cross-site SameSite restrictions) so the subsequent same-site GET redirect
+        /// (e.g. /SSO) will carry the session cookie.
+        /// </summary>
+        internal static void RefreshSessionCookie()
+        {
+            var context = SamlHttpContextAccessor.Current;
+            if (context == null || context.Response.HasStarted) return;
+
+            var session = CurrentSession;
+            if (session == null) return;
+
+            if (!context.Request.IsHttps) return;
+
+            var cookieName = GetSessionCookieName();
+            var cookieOptions = new CookieOptions { Secure = true, HttpOnly = true };
+
+            if (BrowserSupportUtil.ShouldSendSameSiteNone(context.Request.Headers.UserAgent.ToString()))
+                cookieOptions.SameSite = SameSiteMode.None;
+
+            context.Response.Cookies.Append(cookieName, session.SessionId.ToString(), cookieOptions);
+            // Also update Items so CurrentSession finds the ID within this same request
+            context.Items[PendingSessionIdItemKey] = session.SessionId;
+
+            System.Console.Error.WriteLine($"[OIOSAML] RefreshSessionCookie: sessionId={session.SessionId:D} path={context.Request.Path}");
+        }
+
         private static void WriteSessionCookie()
         {
             if (!SamlHttpContextAccessor.Current.Request.IsHttps)

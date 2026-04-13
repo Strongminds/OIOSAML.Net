@@ -728,6 +728,12 @@ namespace dk.nita.saml20.protocol
             SessionStore.CurrentSession[SessionConstants.Saml20AssertionLite] = Saml20AssertionLite.ToLite(assertion);
             System.Console.Error.WriteLine($"[OIOSAML] DoLogin: stored assertion under sessionId={SessionStore.CurrentSession?.SessionId:D}");
 
+            // Re-write the session cookie in this POST response so the browser will include it
+            // in the subsequent GET redirect (e.g. /SSO). On IdP POST-backs the browser cannot
+            // send the existing cookie (blocked by cross-site SameSite policy), so we must
+            // explicitly set it here so the redirect GET carries it.
+            SessionStore.RefreshSessionCookie();
+
             if (Trace.ShouldTrace(TraceEventType.Information))
             {
                 Trace.TraceData(TraceEventType.Information, string.Format(Tracing.Login, assertion.Subject.Value, assertion.SessionIndex, assertion.Subject.Format));

@@ -61,6 +61,8 @@ namespace dk.nita.saml20.protocol
             try
             {
                 CheckConfiguration(context);
+                if (!validated)
+                    return; // HandleError already called inside CheckConfiguration
                 Handle(context);
             }
             catch (Exception ex)
