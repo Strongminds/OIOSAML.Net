@@ -1,5 +1,5 @@
-﻿using System;
-using System.Web;
+using System;
+using Microsoft.AspNetCore.Http;
 using dk.nita.saml20.session;
 using dk.nita.saml20.config;
 using dk.nita.saml20.protocol;
@@ -56,3 +56,4 @@ namespace dk.nita.saml20.protocol
         }
     }
 }
+

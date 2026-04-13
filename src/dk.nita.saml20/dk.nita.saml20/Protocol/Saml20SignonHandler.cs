@@ -8,8 +8,7 @@ using System.Security.Cryptography;
 using System.Security.Cryptography.X509Certificates;
 using System.Security.Cryptography.Xml;
 using System.Text;
-using System.Web;
-using System.Web.Caching;
+using Microsoft.AspNetCore.Http;
 using System.Xml;
 using dk.nita.saml20.Actions;
 using dk.nita.saml20.AuthnRequestAppender;
@@ -72,31 +71,35 @@ namespace dk.nita.saml20.protocol
 
             //Some IdP's are known to fail to set an actual value in the SOAPAction header
             //so we just check for the existence of the header field.
-            if (Array.Exists(context.Request.Headers.AllKeys, delegate (string s) { return s == SOAPConstants.SOAPAction; }))
+            if (context.Request.Headers.ContainsKey(SOAPConstants.SOAPAction))
             {
                 SessionStore.AssertSessionExists();
 
-                HandleSOAP(context, context.Request.InputStream);
+                HandleSOAP(context, context.Request.Body);
                 return;
             }
 
-            if (!string.IsNullOrEmpty(context.Request.Params["SAMLart"]))
+            if (!string.IsNullOrEmpty(context.GetRequestParam("SAMLart")))
             {
                 SessionStore.AssertSessionExists();
 
                 HandleArtifact(context);
             }
 
-            if (!string.IsNullOrEmpty(context.Request.Params["SamlResponse"]))
+            if (!string.IsNullOrEmpty(context.GetRequestParam("SamlResponse")))
             {
+                // Recover the session ID from the RelayState if the browser did not send
+                // the session cookie (e.g. blocked by SameSite policy on a cross-site POST).
+                SessionStore.TryRecoverSessionFromRelayState(context.GetRequestParam("RelayState"));
+
                 SessionStore.AssertSessionExists();
 
                 HandleResponse(context);
             }
             else
             {
-                if (SAML20FederationConfig.GetConfig().CommonDomain.Enabled && context.Request.QueryString["r"] == null
-                    && context.Request.Params["cidp"] == null)
+                if (SAML20FederationConfig.GetConfig().CommonDomain.Enabled && context.Request.Query["r"].FirstOrDefault() == null
+                    && context.GetRequestParam("cidp") == null)
                 {
                     AuditLogging.logEntry(Direction.OUT, Operation.DISCOVER, "Redirecting to Common Domain for IDP discovery");
                     context.Response.Redirect(SAML20FederationConfig.GetConfig().CommonDomain.LocalReaderEndpoint);
@@ -104,7 +107,7 @@ namespace dk.nita.saml20.protocol
                 else
                 {
                     AuditLogging.logEntry(Direction.IN, Operation.ACCESS,
-                                                 "User accessing resource: " + context.Request.RawUrl +
+                                                 "User accessing resource: " + (context.Request.Path + context.Request.QueryString) +
                                                  " without authentication.");
 
                     SessionStore.CreateSessionIfNotExists();
@@ -199,7 +202,7 @@ namespace dk.nita.saml20.protocol
             Trace.TraceMethodCalled(GetType(), "SendRequest()");
 
             // See if the "ReturnUrl" - parameter is set.
-            string returnUrl = context.Request.QueryString["ReturnUrl"];
+            string returnUrl = context.Request.Query["ReturnUrl"].FirstOrDefault();
             // If PreventOpenRedirectAttack has been enabled ... the return URL is only set if the URL is local.
             if (!string.IsNullOrEmpty(returnUrl) && (!FederationConfig.GetConfig().PreventOpenRedirectAttack || IsLocalUrl(returnUrl)))
                 SessionStore.CurrentSession[SessionConstants.RedirectUrl] = returnUrl;
@@ -301,7 +304,7 @@ namespace dk.nita.saml20.protocol
                     if (status.StatusCode.Value == Saml20Constants.StatusCodes.Responder && status.StatusCode.SubStatusCode != null && Saml20Constants.StatusCodes.NoPassive == status.StatusCode.SubStatusCode.Value)
                         HandleError(context, Resources.SamlNoPassiveError);
 
-                    HandleError(context, status);
+                     HandleError(context, status);
                     return;
                 }
 
@@ -379,7 +382,7 @@ namespace dk.nita.saml20.protocol
 
         private static XmlDocument GetDecodedSamlResponse(HttpContext context, Encoding encoding)
         {
-            string base64 = context.Request.Params["SAMLResponse"];
+            string base64 = context.GetRequestParam("SamlResponse");
 
             XmlDocument doc = new XmlDocument();
             doc.XmlResolver = null;
@@ -706,13 +709,13 @@ namespace dk.nita.saml20.protocol
         {
             if (assertion.IsOneTimeUse)
             {
-                if (context.Cache[assertion.Id] != null)
+                if (dk.nita.saml20.Utils.SamlMemoryCache.Get(assertion.Id) != null)
                 {
                     HandleError(context, Resources.OneTimeUseReplay);
                 }
                 else
                 {
-                    context.Cache.Insert(assertion.Id, string.Empty, null, assertion.NotOnOrAfter, Cache.NoSlidingExpiration);
+                    dk.nita.saml20.Utils.SamlMemoryCache.Insert(assertion.Id, string.Empty, assertion.NotOnOrAfter);
                 }
             }
         }
@@ -723,6 +726,12 @@ namespace dk.nita.saml20.protocol
 
             // The assertion is what keeps the session alive. If it is ever removed ... the session will appear as removed in the SessionStoreProvider because Saml20AssertionLite is the only thing kept in session store when login flow is completed..
             SessionStore.CurrentSession[SessionConstants.Saml20AssertionLite] = Saml20AssertionLite.ToLite(assertion);
+
+            // Re-write the session cookie in this POST response so the browser will include it
+            // in the subsequent GET redirect (e.g. /SSO). On IdP POST-backs the browser cannot
+            // send the existing cookie (blocked by cross-site SameSite policy), so we must
+            // explicitly set it here so the redirect GET carries it.
+            SessionStore.RefreshSessionCookie();
 
             if (Trace.ShouldTrace(TraceEventType.Information))
             {
@@ -788,7 +797,7 @@ namespace dk.nita.saml20.protocol
             var httpRequest = context.Request;
             
             // handle AppSwitch parameter.
-            string appSwitchPlatform = httpRequest.Params[AppSwitchPlatform];
+            string appSwitchPlatform = httpRequest.GetRequestParam(AppSwitchPlatform);
             if (!string.IsNullOrWhiteSpace(appSwitchPlatform))
             {
                 var canParse = Enum.TryParse(appSwitchPlatform, true, out Platform queryStringPlatform);
@@ -819,16 +828,16 @@ namespace dk.nita.saml20.protocol
             }
             
             bool isPassive;
-            string isPassiveAsString = httpRequest.Params[IDPIsPassive];
+            string isPassiveAsString = httpRequest.GetRequestParam(IDPIsPassive);
             if (bool.TryParse(isPassiveAsString, out isPassive))
             {
                 request.IsPassive = isPassive;
             }
 
             var requestContextItems = new List<(string value, ItemsChoiceType7 type)>();
-            if (!string.IsNullOrEmpty(context.Request.Params[NsisLoa]))
+            if (!string.IsNullOrEmpty(context.GetRequestParam(NsisLoa)))
             {
-                var demandedLevelOfAssurance = context.Request.Params[NsisLoa];
+                var demandedLevelOfAssurance = context.GetRequestParam(NsisLoa);
                 if (!new[] { "Low", "Substantial", "High" }.Contains(demandedLevelOfAssurance))
                 {
                     HandleError(context, Resources.DemandingLevelOfAssuranceError, demandedLevelOfAssurance);
@@ -843,9 +852,9 @@ namespace dk.nita.saml20.protocol
                 Trace.TraceData(TraceEventType.Information, string.Format(Tracing.DemandingLevelOfAssurance, demandedLevelOfAssurance));
             }
 
-            if (!string.IsNullOrEmpty(context.Request.Params[Profile]))
+            if (!string.IsNullOrEmpty(context.GetRequestParam(Profile)))
             {
-                var demandedProfile = context.Request.Params[Profile];
+                var demandedProfile = context.GetRequestParam(Profile);
 
                 if (!new[] { "Professional", "Person" }.Contains(demandedProfile))
                 {
@@ -869,7 +878,7 @@ namespace dk.nita.saml20.protocol
                 request.IsPassive = true;
 
             bool forceAuthn;
-            string forceAuthnAsString = httpRequest.Params[IDPForceAuthn];
+            string forceAuthnAsString = httpRequest.GetRequestParam(IDPForceAuthn);
             if (bool.TryParse(forceAuthnAsString, out forceAuthn))
             {
                 request.ForceAuthn = forceAuthn;
@@ -897,14 +906,15 @@ namespace dk.nita.saml20.protocol
                 Trace.TraceData(TraceEventType.Information, string.Format(Tracing.SendAuthnRequest, Saml20Constants.ProtocolBindings.HTTP_Redirect, idpEndpoint.Id));
 
                 HttpRedirectBindingBuilder builder = new HttpRedirectBindingBuilder();
-                builder.signingKey = _certificate.PrivateKey;
+                builder.signingKey = _certificate.GetRSAPrivateKey();
                 builder.Request = request.GetXml().OuterXml;
                 builder.ShaHashingAlgorithm = shaHashingAlgorithm;
+                builder.RelayState = SessionStore.BuildRelayState();
                 string s = request.Destination + "?" + builder.ToQuery();
 
                 AuditLogging.logEntry(Direction.OUT, Operation.AUTHNREQUEST_REDIRECT, "Redirecting user to IdP for authentication", builder.Request);
 
-                context.Response.Redirect(s, true);
+                context.Response.Redirect(s);
                 return;
             }
 
@@ -921,9 +931,10 @@ namespace dk.nita.saml20.protocol
                 var signatureProvider = SignatureProviderFactory.CreateFromShaHashingAlgorithmName(shaHashingAlgorithm);
                 signatureProvider.SignAssertion(req, request.ID, signingCertificate);
                 builder.Request = req.OuterXml;
+                builder.RelayState = SessionStore.BuildRelayState();
                 AuditLogging.logEntry(Direction.OUT, Operation.AUTHNREQUEST_POST);
 
-                builder.GetPage().ProcessRequest(context);
+                builder.ProcessRequest(context);
                 return;
             }
 
@@ -947,3 +958,6 @@ namespace dk.nita.saml20.protocol
     }
         
 }
+
+
+

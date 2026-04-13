@@ -45,14 +45,13 @@ namespace dk.nita.test.Saml20
         }
 
         [Test]
-        [ExpectedException(typeof(Saml20FormatException), ExpectedMessage = "NameID with Email Format attribute MUST contain a Value that contains more than whitespace characters")]
         public void _0001_NameID_Invalid_EmptyEmail()
         {
             NameID nameID = new NameID();
             nameID.Format = Saml20Constants.NameIdentifierFormats.Email;
             nameID.Value = " ";
             Saml20NameIDValidator validator = new Saml20NameIDValidator();
-            validator.ValidateNameID(nameID);
+            Assert.Throws<Saml20FormatException>(() => validator.ValidateNameID(nameID));
         }
 
         /// <summary>
@@ -114,36 +113,33 @@ namespace dk.nita.test.Saml20
         }
 
         [Test]
-        [ExpectedException(typeof(Saml20FormatException), ExpectedMessage = "NameID with X509SubjectName Format attribute MUST contain a Value that contains more than whitespace characters")]
         public void _0002_NameID_Invalid_EmptyX509SubjecName()
         {
             NameID nameID = new NameID();
             nameID.Format = Saml20Constants.NameIdentifierFormats.X509SubjectName;
             nameID.Value = "";
             Saml20NameIDValidator validator = new Saml20NameIDValidator();
-            validator.ValidateNameID(nameID);
+            Assert.Throws<Saml20FormatException>(() => validator.ValidateNameID(nameID));
         }
 
         [Test]
-        [ExpectedException(typeof(Saml20FormatException), ExpectedMessage = "NameID with X509SubjectName Format attribute MUST contain a Value that contains more than whitespace characters")]
         public void _0002_NameID_Invalid_X509SubjecName()
         {
             NameID nameID = new NameID();
             nameID.Format = Saml20Constants.NameIdentifierFormats.X509SubjectName;
             nameID.Value = " ";
             Saml20NameIDValidator validator = new Saml20NameIDValidator();
-            validator.ValidateNameID(nameID);
+            Assert.Throws<Saml20FormatException>(() => validator.ValidateNameID(nameID));
         }
 
         [Test]
-        [ExpectedException(typeof(Saml20FormatException), ExpectedMessage = "NameID with Windows Format attribute MUST contain a Value that contains more than whitespace characters")]
         public void _0002_NameID_Invalid_WindowsDomainQualifiedName_Whitespace()
         {
             NameID nameID = new NameID();
             nameID.Format = Saml20Constants.NameIdentifierFormats.Windows;
             nameID.Value = " ";
             Saml20NameIDValidator validator = new Saml20NameIDValidator();
-            validator.ValidateNameID(nameID);
+            Assert.Throws<Saml20FormatException>(() => validator.ValidateNameID(nameID));
         }
 
         [Test]
@@ -161,46 +157,42 @@ namespace dk.nita.test.Saml20
         }
 
         [Test]
-        [ExpectedException(typeof(Saml20FormatException), ExpectedMessage = "NameID with Kerberos Format attribute MUST contain a Value that contains more than whitespace characters")]
         public void _0002_NameID_Invalid_KerberosEmpty()
         {
             NameID nameID = new NameID();
             nameID.Format = Saml20Constants.NameIdentifierFormats.Kerberos;
             nameID.Value = "";
             Saml20NameIDValidator validator = new Saml20NameIDValidator();
-            validator.ValidateNameID(nameID);
+            Assert.Throws<Saml20FormatException>(() => validator.ValidateNameID(nameID));
         }
 
         [Test]
-        [ExpectedException(typeof(Saml20FormatException), ExpectedMessage = "NameID with Kerberos Format attribute MUST contain a Value that contains more than whitespace characters")]
         public void _0002_NameID_Invalid_Kerberos()
         {
             NameID nameID = new NameID();
             nameID.Format = Saml20Constants.NameIdentifierFormats.Kerberos;
             nameID.Value = " ";
             Saml20NameIDValidator validator = new Saml20NameIDValidator();
-            validator.ValidateNameID(nameID);
+            Assert.Throws<Saml20FormatException>(() => validator.ValidateNameID(nameID));
         }
         [Test]
-        [ExpectedException(typeof(Saml20FormatException), ExpectedMessage = "NameID with Kerberos Format attribute MUST contain a Value with at least 3 characters")]
         public void _0002_NameID_Invalid_ContentKerberos1()
         {
             NameID nameID = new NameID();
             nameID.Format = Saml20Constants.NameIdentifierFormats.Kerberos;
             nameID.Value = @"b";
             Saml20NameIDValidator validator = new Saml20NameIDValidator();
-            validator.ValidateNameID(nameID);
+            Assert.Throws<Saml20FormatException>(() => validator.ValidateNameID(nameID));
         }
 
         [Test]
-        [ExpectedException(typeof(Saml20FormatException), ExpectedMessage = "NameID with Kerberos Format attribute MUST contain a Value that contains a '@'")]
         public void _0002_NameID_Invalid_ContentKerberos2()
         {
             NameID nameID = new NameID();
             nameID.Format = Saml20Constants.NameIdentifierFormats.Kerberos;
             nameID.Value = @"a\b";
             Saml20NameIDValidator validator = new Saml20NameIDValidator();
-            validator.ValidateNameID(nameID);
+            Assert.Throws<Saml20FormatException>(() => validator.ValidateNameID(nameID));
         }
 
         [Test]
@@ -214,36 +206,33 @@ namespace dk.nita.test.Saml20
         }
 
         [Test]
-        [ExpectedException(typeof(Saml20FormatException), ExpectedMessage = "NameID with Entity Format attribute MUST contain a Value that contains more than whitespace characters")]
         public void _0002_NameID_Invalid_Entity_Empty()
         {
             NameID nameID = new NameID();
             nameID.Format = Saml20Constants.NameIdentifierFormats.Entity;
             nameID.Value = "";
             Saml20NameIDValidator validator = new Saml20NameIDValidator();
-            validator.ValidateNameID(nameID);
+            Assert.Throws<Saml20FormatException>(() => validator.ValidateNameID(nameID));
         }
 
         [Test]
-        [ExpectedException(typeof(Saml20FormatException), ExpectedMessage = "NameID with Entity Format attribute MUST contain a Value that contains more than whitespace characters")]
         public void _0002_NameID_Invalid_Entity()
         {
             NameID nameID = new NameID();
             nameID.Format = Saml20Constants.NameIdentifierFormats.Entity;
             nameID.Value = " ";
             Saml20NameIDValidator validator = new Saml20NameIDValidator();
-            validator.ValidateNameID(nameID);
+            Assert.Throws<Saml20FormatException>(() => validator.ValidateNameID(nameID));
         }
 
         [Test]
-        [ExpectedException(typeof(Saml20FormatException), ExpectedMessage = "NameID with Entity Format attribute MUST have a Value that contains no more than 1024 characters")]
         public void _0002_NameID_Invalid_Entity_Length()
         {
             NameID nameID = new NameID();
             nameID.Format = Saml20Constants.NameIdentifierFormats.Entity;
             nameID.Value = new string('f', 1025);
             Saml20NameIDValidator validator = new Saml20NameIDValidator();
-            validator.ValidateNameID(nameID);
+            Assert.Throws<Saml20FormatException>(() => validator.ValidateNameID(nameID));
         }
 
         [Test]
@@ -257,7 +246,6 @@ namespace dk.nita.test.Saml20
         }
 
         [Test]
-        [ExpectedException(typeof(Saml20FormatException), ExpectedMessage = "NameID with Entity Format attribute MUST NOT set the NameQualifier attribute")]
         public void _0002_NameID_Invalid_Entity_NameQualifier()
         {
             NameID nameID = new NameID();
@@ -265,11 +253,10 @@ namespace dk.nita.test.Saml20
             nameID.Value = new string('f', 1024);
             nameID.NameQualifier = "ksljdf";
             Saml20NameIDValidator validator = new Saml20NameIDValidator();
-            validator.ValidateNameID(nameID);
+            Assert.Throws<Saml20FormatException>(() => validator.ValidateNameID(nameID));
         }
 
         [Test]
-        [ExpectedException(typeof(Saml20FormatException), ExpectedMessage = "NameID with Entity Format attribute MUST NOT set the SPNameQualifier attribute")]
         public void _0002_NameID_Invalid_Entity_SPNameQualifier()
         {
             NameID nameID = new NameID();
@@ -277,11 +264,10 @@ namespace dk.nita.test.Saml20
             nameID.Value = new string('f', 1024);
             nameID.SPNameQualifier = "ksljdf";
             Saml20NameIDValidator validator = new Saml20NameIDValidator();
-            validator.ValidateNameID(nameID);
+            Assert.Throws<Saml20FormatException>(() => validator.ValidateNameID(nameID));
         }
 
         [Test]
-        [ExpectedException(typeof(Saml20FormatException), ExpectedMessage = "NameID with Entity Format attribute MUST NOT set the SPProvidedID attribute")]
         public void _0002_NameID_Invalid_Entity_SPProvidedID()
         {
             NameID nameID = new NameID();
@@ -289,40 +275,37 @@ namespace dk.nita.test.Saml20
             nameID.Value = new string('f', 1024);
             nameID.SPProvidedID = "ksljdf";
             Saml20NameIDValidator validator = new Saml20NameIDValidator();
-            validator.ValidateNameID(nameID);
+            Assert.Throws<Saml20FormatException>(() => validator.ValidateNameID(nameID));
         }
 
         [Test]
-        [ExpectedException(typeof(Saml20FormatException), ExpectedMessage = "NameID with Persistent Format attribute MUST contain a Value that contains more than whitespace characters")]
         public void _0002_NameID_Invalid_Persistent_Empty()
         {
             NameID nameID = new NameID();
             nameID.Format = Saml20Constants.NameIdentifierFormats.Persistent;
             nameID.Value = "";
             Saml20NameIDValidator validator = new Saml20NameIDValidator();
-            validator.ValidateNameID(nameID);
+            Assert.Throws<Saml20FormatException>(() => validator.ValidateNameID(nameID));
         }
 
         [Test]
-        [ExpectedException(typeof(Saml20FormatException), ExpectedMessage = "NameID with Persistent Format attribute MUST contain a Value that contains more than whitespace characters")]
         public void _0002_NameID_Invalid_Persistent()
         {
             NameID nameID = new NameID();
             nameID.Format = Saml20Constants.NameIdentifierFormats.Persistent;
             nameID.Value = " ";
             Saml20NameIDValidator validator = new Saml20NameIDValidator();
-            validator.ValidateNameID(nameID);
+            Assert.Throws<Saml20FormatException>(() => validator.ValidateNameID(nameID));
         }
 
         [Test]
-        [ExpectedException(typeof(Saml20FormatException), ExpectedMessage = "NameID with Persistent Format attribute MUST have a Value that contains no more than 256 characters")]
         public void _0002_NameID_Invalid_Persistent_Length()
         {
             NameID nameID = new NameID();
             nameID.Format = Saml20Constants.NameIdentifierFormats.Persistent;
             nameID.Value = new string('f', 257);
             Saml20NameIDValidator validator = new Saml20NameIDValidator();
-            validator.ValidateNameID(nameID);
+            Assert.Throws<Saml20FormatException>(() => validator.ValidateNameID(nameID));
         }
 
         [Test]
@@ -336,25 +319,23 @@ namespace dk.nita.test.Saml20
         }
 
         [Test]
-        [ExpectedException(typeof(Saml20FormatException), ExpectedMessage = "NameID with Transient Format attribute MUST have a Value with at least 16 characters (the equivalent of 128 bits)")]
         public void _0002_NameID_Invalid_Transient_MinLength()
         {
             NameID nameID = new NameID();
             nameID.Format = Saml20Constants.NameIdentifierFormats.Transient;
             nameID.Value = new string('f', 15);
             Saml20NameIDValidator validator = new Saml20NameIDValidator();
-            validator.ValidateNameID(nameID);
+            Assert.Throws<Saml20FormatException>(() => validator.ValidateNameID(nameID));
         }
 
         [Test]
-        [ExpectedException(typeof(Saml20FormatException), ExpectedMessage = "NameID with Transient Format attribute MUST have a Value that contains no more than 256 characters")]
         public void _0002_NameID_Invalid_Transient_MaxLength()
         {
             NameID nameID = new NameID();
             nameID.Format = Saml20Constants.NameIdentifierFormats.Transient;
             nameID.Value = new string('f', 257);
             Saml20NameIDValidator validator = new Saml20NameIDValidator();
-            validator.ValidateNameID(nameID);
+            Assert.Throws<Saml20FormatException>(() => validator.ValidateNameID(nameID));
         }
 
         [Test]
@@ -391,26 +372,24 @@ namespace dk.nita.test.Saml20
         /// Tests validation of wrong version attribute
         /// </summary>
         [Test]
-        [ExpectedException(typeof(Saml20FormatException), ExpectedMessage = "Wrong value of version attribute on Assertion element")]
         public void WrongVersion()
         {
             Assertion saml20Assertion = AssertionUtil.GetBasicAssertion();
             saml20Assertion.Version = "60";
 
-            CreateSaml20Token(saml20Assertion);
+            Assert.Throws<Saml20FormatException>(() => CreateSaml20Token(saml20Assertion));
         }
 
         /// <summary>
         /// Tests validation of missing ID attribute
         /// </summary>
         [Test]
-        [ExpectedException(typeof(Saml20FormatException), ExpectedMessage = "Assertion element must have the ID attribute set.")]
         public void MissingID()
         {
             Assertion saml20Assertion = AssertionUtil.GetBasicAssertion();
             saml20Assertion.ID = null;
 
-            CreateSaml20Token(saml20Assertion);
+            Assert.Throws<Saml20FormatException>(() => CreateSaml20Token(saml20Assertion));
         }
 
         //
@@ -418,39 +397,36 @@ namespace dk.nita.test.Saml20
         /// Tests validation of Issuer Element presence
         /// </summary>
         [Test]
-        [ExpectedException(typeof(Saml20FormatException), ExpectedMessage = "Assertion element must have an issuer element.")]
         public void Issuer()
         {
             Assertion saml20Assertion = AssertionUtil.GetBasicAssertion();
             saml20Assertion.Issuer = null;
 
-            CreateSaml20Token(saml20Assertion);
+            Assert.Throws<Saml20FormatException>(() => CreateSaml20Token(saml20Assertion));
         }
 
         /// <summary>
         /// Tests validation of Issuer Element format
         /// </summary>
         [Test]
-        [ExpectedException(typeof(Saml20FormatException), ExpectedMessage = "NameID element has Format attribute which is not a wellformed absolute uri.")]
         public void IssuerFormat()
         {
             Assertion saml20Assertion = AssertionUtil.GetBasicAssertion();
             saml20Assertion.Issuer.Format = "a non wellformed uri";
 
-            CreateSaml20Token(saml20Assertion);
+            Assert.Throws<Saml20FormatException>(() => CreateSaml20Token(saml20Assertion));
         }
 
         /// <summary>
-        /// Tests validation of required IssueInstant Element 
+        /// Tests validation of required IssueInstant Element
         /// </summary>
         [Test]
-        [ExpectedException(typeof(Saml20FormatException), ExpectedMessage = "Assertion element must have the IssueInstant attribute set.")]
         public void IssueInstant()
         {
             Assertion saml20Assertion = AssertionUtil.GetBasicAssertion();
             saml20Assertion.IssueInstant = null;
 
-            CreateSaml20Token(saml20Assertion);
+            Assert.Throws<Saml20FormatException>(() => CreateSaml20Token(saml20Assertion));
         }
 
         #endregion
@@ -461,7 +437,6 @@ namespace dk.nita.test.Saml20
         /// Tests the validation that ensures at most 1 OneTimeUse condition
         /// </summary>
         [Test]
-        [ExpectedException(typeof(Saml20FormatException), ExpectedMessage = "Assertion contained more than one condition of type OneTimeUse")]
         public void OneTimeUse()
         {
             Assertion saml20Assertion = AssertionUtil.GetBasicAssertion();
@@ -474,14 +449,13 @@ namespace dk.nita.test.Saml20
 
             saml20Assertion.Conditions.Items = conditions;
 
-            CreateSaml20Token(saml20Assertion);
+            Assert.Throws<Saml20FormatException>(() => CreateSaml20Token(saml20Assertion));
         }
 
         /// <summary>
         /// Tests the validation that ensures at most 1 ProxyRestriction condition
         /// </summary>
         [Test]
-        [ExpectedException(typeof(Saml20FormatException), ExpectedMessage = "Assertion contained more than one condition of type ProxyRestriction")]
         public void ProxyRestriction()
         {
             Assertion saml20Assertion = AssertionUtil.GetBasicAssertion();
@@ -494,14 +468,13 @@ namespace dk.nita.test.Saml20
 
             saml20Assertion.Conditions.Items = conditions;
 
-            CreateSaml20Token(saml20Assertion);
+            Assert.Throws<Saml20FormatException>(() => CreateSaml20Token(saml20Assertion));
         }
 
         /// <summary>
         /// Tests the validation that ensures the Count property tp be a non-negative integer
         /// </summary>
         [Test]
-        [ExpectedException(typeof(Saml20FormatException), ExpectedMessage = "Count attribute of ProxyRestriction MUST BE a non-negative integer")]
         public void ProxyRestriction_Invalid_Count()
         {
             Assertion saml20Assertion = AssertionUtil.GetBasicAssertion();
@@ -514,7 +487,7 @@ namespace dk.nita.test.Saml20
             conditions.AddRange(saml20Assertion.Conditions.Items);
             saml20Assertion.Conditions.Items = conditions;
 
-            CreateSaml20Token(saml20Assertion);
+            Assert.Throws<Saml20FormatException>(() => CreateSaml20Token(saml20Assertion));
         }
 
         /// <summary>
@@ -540,7 +513,6 @@ namespace dk.nita.test.Saml20
         /// Tests the validation that ensures the Count property tp be a non-negative integer
         /// </summary>
         [Test]
-        [ExpectedException(typeof(Saml20FormatException), ExpectedMessage = "ProxyRestriction Audience MUST BE a wellformed uri")]
         public void ProxyRestriction_Invalid_Audience()
         {
             Assertion saml20Assertion = AssertionUtil.GetBasicAssertion();
@@ -553,7 +525,7 @@ namespace dk.nita.test.Saml20
             conditions.AddRange(saml20Assertion.Conditions.Items);
             saml20Assertion.Conditions.Items = conditions;
 
-            CreateSaml20Token(saml20Assertion);
+            Assert.Throws<Saml20FormatException>(() => CreateSaml20Token(saml20Assertion));
         }
 
         /// <summary>
@@ -618,7 +590,6 @@ namespace dk.nita.test.Saml20
         /// Test validity of assertion when condition has an invalid NotBefore time restriction
         /// </summary>
         [Test]
-        [ExpectedException(typeof(Saml20FormatException), ExpectedMessage = "Conditions.NotBefore is not within expected range")]
         public void TimeRestriction_NotBefore_Invalid()
         {
             // Test with NotBefore that post-dates now 
@@ -627,7 +598,7 @@ namespace dk.nita.test.Saml20
             saml20Assertion.Conditions.NotOnOrAfter = null;
 
             Saml20AssertionValidator validator = new Saml20AssertionValidator(AssertionUtil.GetAudiences(), false);
-            validator.ValidateTimeRestrictions(saml20Assertion, new TimeSpan(), DateTime.UtcNow);
+            Assert.Throws<Saml20FormatException>(() => validator.ValidateTimeRestrictions(saml20Assertion, new TimeSpan(), DateTime.UtcNow));
         }
 
         /// <summary>
@@ -647,7 +618,6 @@ namespace dk.nita.test.Saml20
         /// Test validity of assertion when condition has an invalid NotOnOrAfter time restriction
         /// </summary>
         [Test]
-        [ExpectedException(typeof(Saml20FormatException), ExpectedMessage = "Conditions.NotOnOrAfter is not within expected range")]
         public void TimeRestriction_NotOnOrAfter_Invalid_Yesterday()
         {
             Assertion saml20Assertion = AssertionUtil.GetBasicAssertion();
@@ -656,14 +626,13 @@ namespace dk.nita.test.Saml20
             saml20Assertion.Conditions.NotOnOrAfter = DateTime.UtcNow.AddDays(-1);
 
             Saml20AssertionValidator validator = new Saml20AssertionValidator(AssertionUtil.GetAudiences(), false);
-            validator.ValidateTimeRestrictions(saml20Assertion, new TimeSpan(), DateTime.UtcNow);
+            Assert.Throws<Saml20FormatException>(() => validator.ValidateTimeRestrictions(saml20Assertion, new TimeSpan(), DateTime.UtcNow));
         }
 
         /// <summary>
         /// Test validity of assertion when condition has an invalid NotOnOrAfter time restriction
         /// </summary>
         [Test]
-        [ExpectedException(typeof(Saml20FormatException), ExpectedMessage = "Conditions.NotOnOrAfter is not within expected range")]
         public void TimeRestriction_NotOnOrAfter_Invalid_Now()
         {
             Assertion saml20Assertion = AssertionUtil.GetBasicAssertion();
@@ -672,7 +641,7 @@ namespace dk.nita.test.Saml20
             saml20Assertion.Conditions.NotOnOrAfter = DateTime.UtcNow;
 
             Saml20AssertionValidator validator = new Saml20AssertionValidator(AssertionUtil.GetAudiences(), false);
-            validator.ValidateTimeRestrictions(saml20Assertion, new TimeSpan(), DateTime.UtcNow);
+            Assert.Throws<Saml20FormatException>(() => validator.ValidateTimeRestrictions(saml20Assertion, new TimeSpan(), DateTime.UtcNow));
         }
 
         /// <summary>
@@ -692,7 +661,6 @@ namespace dk.nita.test.Saml20
         /// consider audience-restricted assertions valid
         /// </summary>
         [Test]
-        [ExpectedException(typeof(Saml20FormatException), ExpectedMessage = "The service is not configured to meet any audience restrictions")]
         public void AudienceRestriction_Invalid_NoConfiguration()
         {
             FederationConfig sp = FederationConfig.GetConfig();
@@ -702,7 +670,7 @@ namespace dk.nita.test.Saml20
                 sp.AllowedAudienceUris.Audiences = null;
 
                 Assertion saml20Assertion = AssertionUtil.GetBasicAssertion();
-                CreateSaml20Token(saml20Assertion);
+                Assert.Throws<Saml20FormatException>(() => CreateSaml20Token(saml20Assertion));
             }
             finally
             {
@@ -711,11 +679,10 @@ namespace dk.nita.test.Saml20
         }
 
         /// <summary>
-        /// Test that services that are not configured with the right allowed audience URI's do not 
+        /// Test that services that are not configured with the right allowed audience URI's do not
         /// consider audience-restricted assertions valid
         /// </summary>
         [Test]
-        [ExpectedException(typeof(Saml20FormatException), ExpectedMessage = "The service is not configured to meet the given audience restrictions")]
         public void AudienceRestriction_Invalid_ConfigurationSetup()
         {
             FederationConfig sp = FederationConfig.GetConfig();
@@ -725,7 +692,7 @@ namespace dk.nita.test.Saml20
                 sp.AllowedAudienceUris.Audiences = new List<string>(new string[] { "urn:lalal" });
 
                 Assertion saml20Assertion = AssertionUtil.GetBasicAssertion();
-                CreateSaml20Token(saml20Assertion);
+                Assert.Throws<Saml20FormatException>(() => CreateSaml20Token(saml20Assertion));
             }
             finally
             {
@@ -737,7 +704,6 @@ namespace dk.nita.test.Saml20
         /// Test that audience-restricted assertions are not valid if the restriction values are incorrectly formatted
         /// </summary>
         [Test]
-        [ExpectedException(typeof(Saml20FormatException), ExpectedMessage = "Audience element has value which is not a wellformed absolute uri")]
         public void AudienceRestriction_Invalid_Assertion()
         {
             Assertion saml20Assertion = AssertionUtil.GetBasicAssertion();
@@ -745,14 +711,13 @@ namespace dk.nita.test.Saml20
             sar.Audience = new List<string>( new string[] { "malformed uri" });
 
             saml20Assertion.Conditions.Items = new List<ConditionAbstract>(new ConditionAbstract[] { sar });
-            CreateSaml20Token(saml20Assertion);
+            Assert.Throws<Saml20FormatException>(() => CreateSaml20Token(saml20Assertion));
         }
 
         /// <summary>
-        /// Test that audience-restricted assertions are not valid if ANY of the audience restrictions is not met 
+        /// Test that audience-restricted assertions are not valid if ANY of the audience restrictions is not met
         /// </summary>
         [Test]
-        [ExpectedException(typeof(Saml20FormatException), ExpectedMessage = "The service is not configured to meet the given audience restrictions")]
         public void AudienceRestriction_Invalid_MultipleAudienceRestrictions()
         {
             Assertion saml20Assertion = AssertionUtil.GetBasicAssertion();
@@ -764,11 +729,11 @@ namespace dk.nita.test.Saml20
 
             saml20Assertion.Conditions.Items = audienceConditions;
 
-            CreateSaml20Token(saml20Assertion);
+            Assert.Throws<Saml20FormatException>(() => CreateSaml20Token(saml20Assertion));
         }
 
         /// <summary>
-        /// Test that audience-restricted assertions are valid if ALL of the audience restrictions are met 
+        /// Test that audience-restricted assertions are valid if ALL of the audience restrictions are met
         /// </summary>
         [Test]
         public void AudienceRestriction_Valid_MultipleAudienceRestrictions()
@@ -816,7 +781,6 @@ namespace dk.nita.test.Saml20
         /// Tests the validation that ensures that a subject MUST have at least one subelement
         /// </summary>
         [Test]
-        [ExpectedException(typeof(Saml20FormatException), ExpectedMessage = "Subject MUST contain either an identifier or a subject confirmation")]
         public void SubjectConfirmation()
         {
             Assertion saml20Assertion = AssertionUtil.GetBasicAssertion();
@@ -824,75 +788,70 @@ namespace dk.nita.test.Saml20
             saml20Assertion.Subject.Items = new object[] { };
 
             Saml20SubjectValidator validator = new Saml20SubjectValidator();
-            validator.ValidateSubject(saml20Assertion.Subject);
+            Assert.Throws<Saml20FormatException>(() => validator.ValidateSubject(saml20Assertion.Subject));
         }
 
         /// <summary>
         /// Tests the validation that ensures that a subject MUST have at least one subelement of correct type
         /// </summary>
         [Test]
-        [ExpectedException(typeof(Saml20FormatException), ExpectedMessage = "Subject must have either NameID, EncryptedID or SubjectConfirmation subelement.")]
         public void SubjectConfirmation_WrongIdentifier()
         {
             Assertion saml20Assertion = AssertionUtil.GetBasicAssertion();
             saml20Assertion.Subject.Items = new object[] { String.Empty, 24, new List<object>(1), new Advice() };
 
             Saml20SubjectValidator validator = new Saml20SubjectValidator();
-            validator.ValidateSubject(saml20Assertion.Subject);
+            Assert.Throws<Saml20FormatException>(() => validator.ValidateSubject(saml20Assertion.Subject));
         }
 
         /// <summary>
         /// Tests the validation of the SubjectConfirmation element's method attribute.
         /// </summary>
         [Test]
-        [ExpectedException(typeof(Saml20FormatException), ExpectedMessage = "Method attribute of SubjectConfirmation MUST contain at least one non-whitespace character")]
         public void SubjectConfirmationEmptyMethod()
         {
             SubjectConfirmation sct = new SubjectConfirmation();
             sct.Method = " ";
             Saml20SubjectConfirmationValidator validator = new Saml20SubjectConfirmationValidator();
-            validator.ValidateSubjectConfirmation(sct);
+            Assert.Throws<Saml20FormatException>(() => validator.ValidateSubjectConfirmation(sct));
         }
 
         /// <summary>
         /// Tests the validation of the SubjectConfirmation element's method attribute.
         /// </summary>
         [Test]
-        [ExpectedException(typeof(Saml20FormatException), ExpectedMessage = "SubjectConfirmation element has Method attribute which is not a wellformed absolute uri.")]
         public void SubjectConfirmationWrongMethod()
         {
             SubjectConfirmation sct = new SubjectConfirmation();
             sct.Method = "malformed uri";
             Saml20SubjectConfirmationValidator validator = new Saml20SubjectConfirmationValidator();
-            validator.ValidateSubjectConfirmation(sct);
+            Assert.Throws<Saml20FormatException>(() => validator.ValidateSubjectConfirmation(sct));
         }
 
         /// <summary>
         /// Tests the validation of the SubjectConfirmationData recipient element
         /// </summary>
         [Test]
-        [ExpectedException(typeof(Saml20FormatException), ExpectedMessage = "Recipient of SubjectConfirmationData must be a wellformed absolute URI.")]
         public void SubjectConfirmationDataEmptyRecipient()
         {
             SubjectConfirmationData subjectConfirmationData = new SubjectConfirmationData();
             subjectConfirmationData.Recipient = " ";
 
             Saml20SubjectConfirmationDataValidator validator = new Saml20SubjectConfirmationDataValidator();
-            validator.ValidateSubjectConfirmationData(subjectConfirmationData);
+            Assert.Throws<Saml20FormatException>(() => validator.ValidateSubjectConfirmationData(subjectConfirmationData));
         }
 
         /// <summary>
         /// Tests the validation of the SubjectConfirmationData recipient element
         /// </summary>
         [Test]
-        [ExpectedException(typeof(Saml20FormatException), ExpectedMessage = "Recipient of SubjectConfirmationData must be a wellformed absolute URI.")]
         public void SubjectConfirmationDataInvalidRecipient()
         {
             SubjectConfirmationData subjectConfirmationData = new SubjectConfirmationData();
             subjectConfirmationData.Recipient = "malformed uri";
 
             Saml20SubjectConfirmationDataValidator validator = new Saml20SubjectConfirmationDataValidator();
-            validator.ValidateSubjectConfirmationData(subjectConfirmationData);
+            Assert.Throws<Saml20FormatException>(() => validator.ValidateSubjectConfirmationData(subjectConfirmationData));
         }
 
         /// <summary>
@@ -914,7 +873,6 @@ namespace dk.nita.test.Saml20
         /// Tests the validation of the SubjectConfirmationData {NotBefore, NotOnOrAfter} attributes
         /// </summary>
         [Test]
-        [ExpectedException(typeof(Saml20FormatException), ExpectedMessage = "NotBefore 2008-01-30T17:13:00.5Z MUST BE less than NotOnOrAfter 2008-01-30T16:13:00.5Z on SubjectConfirmationData")]
         public void SubjectConfirmationDataInvalidTimeInterval()
         {
             SubjectConfirmationData subjectConfirmationData = new SubjectConfirmationData();
@@ -922,7 +880,7 @@ namespace dk.nita.test.Saml20
             subjectConfirmationData.NotOnOrAfter = subjectConfirmationData.NotBefore.Value.AddHours(-1);
 
             Saml20SubjectConfirmationDataValidator validator = new Saml20SubjectConfirmationDataValidator();
-            validator.ValidateSubjectConfirmationData(subjectConfirmationData);
+            Assert.Throws<Saml20FormatException>(() => validator.ValidateSubjectConfirmationData(subjectConfirmationData));
         }
         /// <summary>
         /// Tests the validation of the SubjectConfirmationData {NotBefore, NotOnOrAfter} attributes
@@ -952,18 +910,16 @@ namespace dk.nita.test.Saml20
         }
 
         [Test]
-        [ExpectedException(typeof(Saml20FormatException), ExpectedMessage = "SubjectConfirmationData element MUST have at least one " + KeyInfo.ELEMENT_NAME + " subelement")]
         public void SubjectConfirmationData_Invalid_KeyInfoConfirmationData_NoAnyElement()
         {
             KeyInfoConfirmationData subjectConfirmationData = new KeyInfoConfirmationData();
             subjectConfirmationData.Recipient = "urn:wellformed.uri:ok";
 
             Saml20SubjectConfirmationDataValidator validator = new Saml20SubjectConfirmationDataValidator();
-            validator.ValidateSubjectConfirmationData(subjectConfirmationData);
+            Assert.Throws<Saml20FormatException>(() => validator.ValidateSubjectConfirmationData(subjectConfirmationData));
         }
 
         [Test]
-        [ExpectedException(typeof(Saml20FormatException), ExpectedMessage = "SubjectConfirmationData element MUST contain at least one " + KeyInfo.ELEMENT_NAME + " in namespace " + Saml20Constants.XMLDSIG)]
         public void SubjectConfirmationData_Invalid_KeyInfoConfirmationData_IncompleteAnyElement()
         {
             KeyInfoConfirmationData subjectConfirmationData = new KeyInfoConfirmationData();
@@ -972,12 +928,11 @@ namespace dk.nita.test.Saml20
             subjectConfirmationData.AnyElements = new XmlElement[] { doc.CreateElement("ds", "KeyInfo", "http://wrongNameSpace.uri") };
 
             Saml20SubjectConfirmationDataValidator validator = new Saml20SubjectConfirmationDataValidator();
-            validator.ValidateSubjectConfirmationData(subjectConfirmationData);
+            Assert.Throws<Saml20FormatException>(() => validator.ValidateSubjectConfirmationData(subjectConfirmationData));
         }
 
 
         [Test]
-        [ExpectedException(typeof(Saml20FormatException), ExpectedMessage = "KeyInfo subelement of SubjectConfirmationData MUST NOT be empty")]
         public void SubjectConfirmationData_Invalid_KeyInfoConfirmationData_IncompleteAnyElement_NoChildren()
         {
             KeyInfoConfirmationData subjectConfirmationData = new KeyInfoConfirmationData();
@@ -986,11 +941,10 @@ namespace dk.nita.test.Saml20
             subjectConfirmationData.AnyElements = new XmlElement[] { doc.CreateElement("ds", "KeyInfo", Saml20Constants.XMLDSIG) };
 
             Saml20SubjectConfirmationDataValidator validator = new Saml20SubjectConfirmationDataValidator();
-            validator.ValidateSubjectConfirmationData(subjectConfirmationData);
+            Assert.Throws<Saml20FormatException>(() => validator.ValidateSubjectConfirmationData(subjectConfirmationData));
         }
 
         [Test]
-        [ExpectedException(typeof(Saml20FormatException), ExpectedMessage = "SubjectConfirmationData element MUST contain at least one " + KeyInfo.ELEMENT_NAME + " in namespace " + Saml20Constants.XMLDSIG)]
         public void SubjectConfirmationData_Invalid_KeyInfoConfirmationData_WrongAnyElement()
         {
             KeyInfoConfirmationData subjectConfirmationData = new KeyInfoConfirmationData();
@@ -1002,7 +956,7 @@ namespace dk.nita.test.Saml20
             subjectConfirmationData.AnyElements = new XmlElement[] { elem };
 
             Saml20SubjectConfirmationDataValidator validator = new Saml20SubjectConfirmationDataValidator();
-            validator.ValidateSubjectConfirmationData(subjectConfirmationData);
+            Assert.Throws<Saml20FormatException>(() => validator.ValidateSubjectConfirmationData(subjectConfirmationData));
         }
 
         [Test]
@@ -1021,7 +975,6 @@ namespace dk.nita.test.Saml20
         }
 
         [Test]
-        [ExpectedException(typeof(Saml20FormatException), ExpectedMessage = "SubjectConfirmationData element MUST have at least one " + KeyInfo.ELEMENT_NAME + " subelement")]
         public void SubjectConfirmationData_Method_HolderOfKey_Invalid_NoKeyInfo()
         {
             SubjectConfirmation subjectConfirmation = new SubjectConfirmation();
@@ -1029,7 +982,7 @@ namespace dk.nita.test.Saml20
             subjectConfirmation.SubjectConfirmationData = new SubjectConfirmationData();
 
             Saml20SubjectConfirmationValidator validator = new Saml20SubjectConfirmationValidator();
-            validator.ValidateSubjectConfirmation(subjectConfirmation);
+            Assert.Throws<Saml20FormatException>(() => validator.ValidateSubjectConfirmation(subjectConfirmation));
         }
 
         [Test]
@@ -1055,7 +1008,6 @@ namespace dk.nita.test.Saml20
         /// Tests that AuthnStatement objects must have an AuthnInstant attribute
         /// </summary>
         [Test]
-        [ExpectedException(typeof(Saml20FormatException), ExpectedMessage = "AuthnStatement MUST have an AuthnInstant attribute")]
         public void AuthnStatement_Invalid_AuthnInstant()
         {
             Assertion saml20Assertion = AssertionUtil.GetBasicAssertion();
@@ -1064,14 +1016,13 @@ namespace dk.nita.test.Saml20
 
             saml20Assertion.Items = statements.ToArray();
 
-            CreateSaml20Token(saml20Assertion);
+            Assert.Throws<Saml20FormatException>(() => CreateSaml20Token(saml20Assertion));
         }
 
         /// <summary>
         /// Tests that AuthnStatement objects must have an AuthnInstant attribute
         /// </summary>
-        [Ignore]    // TODO: test data needs fixing
-        [ExpectedException(typeof(Saml20FormatException), ExpectedMessage = "AuthnStatement attribute SessionNotOnOrAfter MUST be in the future")]
+        [Ignore("To be fixed")]// TODO: test data needs fixing
         public void AuthnStatement_Invalid_SessionNotOnOrAfter()
         {
             Assertion saml20Assertion = AssertionUtil.GetBasicAssertion();
@@ -1091,7 +1042,6 @@ namespace dk.nita.test.Saml20
         /// Tests that AuthnStatement objects must have an AuthnContext element
         /// </summary>
         [Test]
-        [ExpectedException(typeof(Saml20FormatException), ExpectedMessage = "AuthnStatement MUST have an AuthnContext element")]
         public void AuthnStatement_Invalid_AuthnContextNull()
         {
             Assertion saml20Assertion = AssertionUtil.GetBasicAssertion();
@@ -1103,14 +1053,13 @@ namespace dk.nita.test.Saml20
 
             saml20Assertion.Items = statements.ToArray();
 
-            CreateSaml20Token(saml20Assertion);
+            Assert.Throws<Saml20FormatException>(() => CreateSaml20Token(saml20Assertion));
         }
 
         /// <summary>
         /// Tests that AuthnStatement objects must have non-null contents
         /// </summary>
         [Test]
-        [ExpectedException(typeof(Saml20FormatException), ExpectedMessage = "AuthnContext element MUST contain at least one AuthnContextClassRef, AuthnContextDecl or AuthnContextDeclRef element")]
         public void AuthnStatement_Invalid_AuthnContextNoContextItems()
         {
             Assertion saml20Assertion = AssertionUtil.GetBasicAssertion();
@@ -1123,14 +1072,13 @@ namespace dk.nita.test.Saml20
 
             saml20Assertion.Items = statements.ToArray();
 
-            CreateSaml20Token(saml20Assertion);
+            Assert.Throws<Saml20FormatException>(() => CreateSaml20Token(saml20Assertion));
         }
 
         /// <summary>
         /// Tests that AuthnStatement objects must have non-empty contents
         /// </summary>
         [Test]
-        [ExpectedException(typeof(Saml20FormatException), ExpectedMessage = "AuthnContext element MUST contain at least one AuthnContextClassRef, AuthnContextDecl or AuthnContextDeclRef element")]
         public void AuthnStatement_Invalid_AuthnContextEmpty()
         {
             Assertion saml20Assertion = AssertionUtil.GetBasicAssertion();
@@ -1145,14 +1093,13 @@ namespace dk.nita.test.Saml20
 
             saml20Assertion.Items = statements.ToArray();
 
-            CreateSaml20Token(saml20Assertion);
+            Assert.Throws<Saml20FormatException>(() => CreateSaml20Token(saml20Assertion));
         }
 
         /// <summary>
         /// Tests that AuthnStatement objects must have a AuthnContextClassRef type as the first element if it is present
         /// </summary>
         [Test]
-        [ExpectedException(typeof(Saml20FormatException), ExpectedMessage = "AuthnContextClassRef must be in the first element")]
         public void AuthnStatement_Invalid_AuthnContextClassRef_MustBeFirst()
         {
             Assertion saml20Assertion = AssertionUtil.GetBasicAssertion();
@@ -1167,14 +1114,13 @@ namespace dk.nita.test.Saml20
 
             saml20Assertion.Items = statements.ToArray();
 
-            CreateSaml20Token(saml20Assertion);
+            Assert.Throws<Saml20FormatException>(() => CreateSaml20Token(saml20Assertion));
         }
 
         /// <summary>
         /// Tests that AuthnStatement objects must have no more than 2 {AuthnContextClassRef, AuthnContextDeclRef} elements
         /// </summary>
         [Test]
-        [ExpectedException(typeof(Saml20FormatException), ExpectedMessage = "AuthnContext MUST NOT contain more than two elements.")]
         public void AuthnStatement_Invalid_AuthnContext_Max2Refs()
         {
             Assertion saml20Assertion = AssertionUtil.GetBasicAssertion();
@@ -1189,7 +1135,7 @@ namespace dk.nita.test.Saml20
 
             saml20Assertion.Items = statements.ToArray();
 
-            CreateSaml20Token(saml20Assertion);
+            Assert.Throws<Saml20FormatException>(() => CreateSaml20Token(saml20Assertion));
         }
 
 
@@ -1197,7 +1143,6 @@ namespace dk.nita.test.Saml20
         /// Tests that AuthnStatement objects must have an valid uri content for AuthnContextClassRef types
         /// </summary>
         [Test]
-        [ExpectedException(typeof(Saml20FormatException), ExpectedMessage = "AuthnContextClassRef has a value which is not a wellformed absolute uri")]
         public void AuthnStatement_Invalid_AuthnContextClassRefUri()
         {
             Assertion saml20Assertion = AssertionUtil.GetBasicAssertion();
@@ -1212,14 +1157,13 @@ namespace dk.nita.test.Saml20
 
             saml20Assertion.Items = statements.ToArray();
 
-            CreateSaml20Token(saml20Assertion);
+            Assert.Throws<Saml20FormatException>(() => CreateSaml20Token(saml20Assertion));
         }
 
         /// <summary>
         /// Tests that AuthnStatement objects must have an valid uri content for AuthnContextDeclRef types
         /// </summary>
         [Test]
-        [ExpectedException(typeof(Saml20FormatException), ExpectedMessage = "AuthnContextDeclRef has a value which is not a wellformed absolute uri")]
         public void AuthnStatement_Invalid_AuthnContextDeclRefUri()
         {
             Assertion saml20Assertion = AssertionUtil.GetBasicAssertion();
@@ -1234,14 +1178,13 @@ namespace dk.nita.test.Saml20
 
             saml20Assertion.Items = statements.ToArray();
 
-            CreateSaml20Token(saml20Assertion);
+            Assert.Throws<Saml20FormatException>(() => CreateSaml20Token(saml20Assertion));
         }
 
         /// <summary>
         /// Tests that AuthnStatement objects MUST NOT have content of type AuthnContextDecl
         /// </summary>
         [Test]
-        [ExpectedException(typeof(Saml20FormatException), ExpectedMessage = "AuthnContextDecl elements are not allowed in this implementation")]
         public void AuthnStatement_Invalid_AuthnContextDecl()
         {
             Assertion saml20Assertion = AssertionUtil.GetBasicAssertion();
@@ -1256,14 +1199,13 @@ namespace dk.nita.test.Saml20
 
             saml20Assertion.Items = statements.ToArray();
 
-            CreateSaml20Token(saml20Assertion);
+            Assert.Throws<Saml20FormatException>(() => CreateSaml20Token(saml20Assertion));
         }
 
         /// <summary>
         /// Tests that AuthnStatement objects must have an valid uri content for AuthenticatingAuthority entries
         /// </summary>
         [Test]
-        [ExpectedException(typeof(Saml20FormatException), ExpectedMessage = "AuthenticatingAuthority array contains a value which is not a wellformed absolute uri")]
         public void AuthnStatement_Invalid_AuthnContextAuthenticatingAuthorityUri()
         {
             Assertion saml20Assertion = AssertionUtil.GetBasicAssertion();
@@ -1279,14 +1221,13 @@ namespace dk.nita.test.Saml20
 
             saml20Assertion.Items = statements.ToArray();
 
-            CreateSaml20Token(saml20Assertion);
+            Assert.Throws<Saml20FormatException>(() => CreateSaml20Token(saml20Assertion));
         }
 
         /// <summary>
         /// Test that AttributeStatement objects must have a non-null Items-list
         /// </summary>
         [Test]
-        [ExpectedException(typeof(Saml20FormatException), ExpectedMessage = "AttributeStatement MUST contain at least one Attribute or EncryptedAttribute")]
         public void AttributeStatement_Invalid_NoAttributes()
         {
             Assertion saml20Assertion = AssertionUtil.GetBasicAssertion();
@@ -1297,14 +1238,13 @@ namespace dk.nita.test.Saml20
 
             saml20Assertion.Items = statements.ToArray();
 
-            CreateSaml20Token(saml20Assertion);
+            Assert.Throws<Saml20FormatException>(() => CreateSaml20Token(saml20Assertion));
         }
 
         /// <summary>
         /// Test that AttributeStatement objects must have a non-empty Items-list
         /// </summary>
         [Test]
-        [ExpectedException(typeof(Saml20FormatException), ExpectedMessage = "AttributeStatement MUST contain at least one Attribute or EncryptedAttribute")]
         public void AttributeStatement_Invalid_EmptyAttributes()
         {
             Assertion saml20Assertion = AssertionUtil.GetBasicAssertion();
@@ -1315,14 +1255,13 @@ namespace dk.nita.test.Saml20
 
             saml20Assertion.Items = statements.ToArray();
 
-            CreateSaml20Token(saml20Assertion);
+            Assert.Throws<Saml20FormatException>(() => CreateSaml20Token(saml20Assertion));
         }
 
         /// <summary>
         /// Test that Attribute objects must have a non-empty Name
         /// </summary>
         [Test]
-        [ExpectedException(typeof(Saml20FormatException), ExpectedMessage = "Name attribute of Attribute element MUST contain at least one non-whitespace character")]
         public void AttributeStatement_Invalid_Attribute()
         {
             Assertion saml20Assertion = AssertionUtil.GetBasicAssertion();
@@ -1333,14 +1272,13 @@ namespace dk.nita.test.Saml20
 
             saml20Assertion.Items = statements.ToArray();
 
-            CreateSaml20Token(saml20Assertion);
+            Assert.Throws<Saml20FormatException>(() => CreateSaml20Token(saml20Assertion));
         }
 
         /// <summary>
         /// Test that xml attribute extensions on Attribute objects must be namespace qualified
         /// </summary>
         [Test]
-        [ExpectedException(typeof(Saml20FormatException), ExpectedMessage = "Attribute extension xml attributes MUST BE namespace qualified")]
         public void AttributeStatement_Invalid_Attribute_AnyAttrUnqualified()
         {
             Assertion saml20Assertion = AssertionUtil.GetBasicAssertion();
@@ -1353,7 +1291,7 @@ namespace dk.nita.test.Saml20
 
             saml20Assertion.Items = statements.ToArray();
 
-            CreateSaml20Token(saml20Assertion);
+            Assert.Throws<Saml20FormatException>(() => CreateSaml20Token(saml20Assertion));
         }
 
         /// <summary>
@@ -1390,7 +1328,6 @@ namespace dk.nita.test.Saml20
         /// Test that EncryptedAttribute objects must have an EncryptedData child element
         /// </summary>
         [Test]
-        [ExpectedException(typeof(Saml20FormatException), ExpectedMessage = "An EncryptedAttribute MUST contain an xenc:EncryptedData element")]
         public void AttributeStatement_Invalid_EncryptedAttribute_NoData()
         {
             Assertion saml20Assertion = AssertionUtil.GetBasicAssertion();
@@ -1403,14 +1340,13 @@ namespace dk.nita.test.Saml20
             sas.Items = attributes.ToArray();
             saml20Assertion.Items = statements.ToArray();
 
-            CreateSaml20Token(saml20Assertion);
+            Assert.Throws<Saml20FormatException>(() => CreateSaml20Token(saml20Assertion));
         }
 
         /// <summary>
         /// Test that EncryptedData element must have the correct Type value
         /// </summary>
         [Test]
-        [ExpectedException(typeof(Saml20FormatException), ExpectedMessage = "Type attribute of EncryptedData MUST have value " + Saml20Constants.XENC + "Element" + " if it is present")]
         public void AttributeStatement_Invalid_EncryptedAttribute_WrongType()
         {
             Assertion saml20Assertion = AssertionUtil.GetBasicAssertion();
@@ -1425,29 +1361,27 @@ namespace dk.nita.test.Saml20
             sas.Items = attributes.ToArray();
             saml20Assertion.Items = statements.ToArray();
 
-            CreateSaml20Token(saml20Assertion);
+            Assert.Throws<Saml20FormatException>(() => CreateSaml20Token(saml20Assertion));
         }
 
         [Test]
-        [ExpectedException(typeof(Saml20FormatException), ExpectedMessage = "Resource attribute of AuthzDecisionStatement is REQUIRED")]
         public void AuthzDecisionStatement_Invalid_Resource()
         {
             AuthzDecisionStatement statement = new AuthzDecisionStatement();
             Saml20StatementValidator validator = new Saml20StatementValidator();
 
             statement.Resource = null;
-            validator.ValidateStatement(statement);
+            Assert.Throws<Saml20FormatException>(() => validator.ValidateStatement(statement));
         }
 
         [Test]
-        [ExpectedException(typeof(Saml20FormatException), ExpectedMessage = "Resource attribute of AuthzDecisionStatement has a value which is not a wellformed absolute uri")]
         public void AuthzDecisionStatement_Invalid_MalformedResource()
         {
             AuthzDecisionStatement statement = new AuthzDecisionStatement();
             Saml20StatementValidator validator = new Saml20StatementValidator();
 
             statement.Resource = "a malformed uri";
-            validator.ValidateStatement(statement);
+            Assert.Throws<Saml20FormatException>(() => validator.ValidateStatement(statement));
         }
 
         [Test]
@@ -1483,3 +1417,4 @@ namespace dk.nita.test.Saml20
 
     }
 }
+

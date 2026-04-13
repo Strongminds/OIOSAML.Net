@@ -1,5 +1,5 @@
 ﻿using System;
-using System.Web;
+using Microsoft.AspNetCore.Http;
 using System.Xml;
 using dk.nita.saml20.config;
 using dk.nita.saml20.Utils;
@@ -46,15 +46,15 @@ namespace dk.nita.saml20.Logging
         ///</summary>
         public static string AssertionId
         {
-            get { return HttpContext.Current.Items["AuditLogging:AssertionId"] as string; }
-            set { HttpContext.Current.Items["AuditLogging:AssertionId"] = value; }
+            get { return SamlHttpContextAccessor.Current?.Items["AuditLogging:AssertionId"] as string; }
+            set { if (SamlHttpContextAccessor.Current != null) SamlHttpContextAccessor.Current.Items["AuditLogging:AssertionId"] = value; }
         }
         ///<summary>
         ///</summary>
         public static string IdpId
         {
-            get { return HttpContext.Current.Items["AuditLogging:IdpId"] as string; }
-            set { HttpContext.Current.Items["AuditLogging:IdpId"] = value; }
+            get { return SamlHttpContextAccessor.Current?.Items["AuditLogging:IdpId"] as string; }
+            set { if (SamlHttpContextAccessor.Current != null) SamlHttpContextAccessor.Current.Items["AuditLogging:IdpId"] = value; }
         }
 
         ///<summary>
@@ -96,7 +96,7 @@ namespace dk.nita.saml20.Logging
         ///<param name="data"></param>
         public static void logEntry(Direction dir, Operation op, string msg, string data)
         {
-            var userHostAddress = HttpContext.Current != null ? HttpContext.Current.Request.UserHostAddress : "<no ip>";
+            var userHostAddress = SamlHttpContextAccessor.Current != null ? SamlHttpContextAccessor.Current.Connection?.RemoteIpAddress?.ToString() ?? "<no ip>" : "<no ip>";
             var sessionId = SessionStore.CurrentSession != null ? SessionStore.CurrentSession.SessionId.ToString() : "<no session id>";
 
             AuditLogger.LogEntry(dir, op, msg, data, userHostAddress, IdpId, AssertionId, sessionId);

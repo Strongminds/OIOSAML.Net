@@ -1,6 +1,6 @@
 using System;
+using System.Net;
 using System.Security.Cryptography.X509Certificates;
-using System.Web;
 using dk.nita.saml20.config;
 using dk.nita.saml20.Properties;
 
@@ -25,24 +25,24 @@ namespace dk.nita.saml20.Bindings
                 _config = SAML20FederationConfig.GetConfig();
                 if (_config == null)
                 {
-                    errorMessage = HttpUtility.HtmlEncode(Saml20Resources.MissingSaml20Federation);
+                    errorMessage = WebUtility.HtmlEncode(Saml20Resources.MissingSaml20Federation);
                     return false;
                 }
                 if (_config.ServiceProvider == null)
                 {
                     errorMessage =
-                        HttpUtility.HtmlEncode(Saml20Resources.MissingServiceProvider);
+                        WebUtility.HtmlEncode(Saml20Resources.MissingServiceProvider);
                     return false;
                 }
                 if (string.IsNullOrEmpty(_config.ServiceProvider.ID))
                 {
                     errorMessage =
-                        HttpUtility.HtmlEncode(Saml20Resources.MissingServiceProviderId);
+                        WebUtility.HtmlEncode(Saml20Resources.MissingServiceProviderId);
                     return false;
                 }
                 if (FederationConfig.GetConfig().SigningCertificates == null || FederationConfig.GetConfig().SigningCertificates.Count == 0)
                 {
-                    errorMessage = HttpUtility.HtmlEncode(Saml20Resources.MissingSigningCertificate);
+                    errorMessage = WebUtility.HtmlEncode(Saml20Resources.MissingSigningCertificate);
                     return false;
                 }
                 try
@@ -59,19 +59,19 @@ namespace dk.nita.saml20.Bindings
                 }
                 catch (Exception ex)
                 {
-                    errorMessage = HttpUtility.HtmlEncode(Saml20Resources.SigningCertficateLoadError) + ex.Message;
+                    errorMessage = WebUtility.HtmlEncode(Saml20Resources.SigningCertficateLoadError) + ex.Message;
                     return false;
                 }
 
                 if (_config.IDPEndPoints == null)
                 {
-                    errorMessage = HttpUtility.HtmlEncode(Saml20Resources.MissingIDPEndpoints);
+                    errorMessage = WebUtility.HtmlEncode(Saml20Resources.MissingIDPEndpoints);
                     return false;
                 }
 
                 if (_config.Endpoints.MetadataLocation == null)
                 {
-                    errorMessage = HttpUtility.HtmlEncode(Saml20Resources.MissingMetadataLocation);
+                    errorMessage = WebUtility.HtmlEncode(Saml20Resources.MissingMetadataLocation);
                     return false;
                 }
 

@@ -2,7 +2,8 @@ using System;
 using System.Collections.Generic;
 using System.Configuration;
 using System.Diagnostics;
-using System.Web;
+using System.Linq;
+using Microsoft.AspNetCore.Http;
 using dk.nita.saml20.Bindings;
 using dk.nita.saml20.config;
 using dk.nita.saml20.Logging;
@@ -54,9 +55,14 @@ namespace dk.nita.saml20.protocol
         /// <param name="context">An <see cref="T:System.Web.HttpContext"/> object that provides references to the intrinsic server objects (for example, Request, Response, Session, and Server) used to service HTTP requests.</param>
         public sealed override void ProcessRequest(HttpContext context)
         {
+            // Pin the explicit context so SamlHttpContextAccessor.Current returns the right
+            // HttpContext throughout this request, even if IHttpContextAccessor is misconfigured.
+            SamlHttpContextAccessor.SetExplicitContext(context);
             try
             {
                 CheckConfiguration(context);
+                if (!validated)
+                    return; // HandleError already called inside CheckConfiguration
                 Handle(context);
             }
             catch (Exception ex)
@@ -102,20 +108,20 @@ namespace dk.nita.saml20.protocol
             SAML20FederationConfig config = SAML20FederationConfig.GetConfig();
 
             //If idpChoice is set, use it value
-            if (!string.IsNullOrEmpty(context.Request.Params[IDPChoiceParameterName]))
+            if (!string.IsNullOrEmpty(context.GetRequestParam(IDPChoiceParameterName)))
             {
                 AuditLogging.logEntry(Direction.IN, Operation.DISCOVER,
-                                      "Using IDPChoiceParamater: " + context.Request.Params[IDPChoiceParameterName]);
-                IDPEndPoint endPoint = config.FindEndPoint(context.Request.Params[IDPChoiceParameterName]);
+                                      "Using IDPChoiceParamater: " + context.GetRequestParam(IDPChoiceParameterName));
+                IDPEndPoint endPoint = config.FindEndPoint(context.GetRequestParam(IDPChoiceParameterName));
                 if (endPoint != null)
                     return endPoint;
             }
 
             //If we have a common domain cookie, use it's value
             //It must have been returned from the local common domain cookie reader endpoint.
-            if (!string.IsNullOrEmpty(context.Request.QueryString["_saml_idp"]))
+            if (!string.IsNullOrEmpty(context.Request.Query["_saml_idp"].FirstOrDefault()))
             {
-                CommonDomainCookie cdc = new CommonDomainCookie(context.Request.QueryString["_saml_idp"]);
+                CommonDomainCookie cdc = new CommonDomainCookie(context.Request.Query["_saml_idp"].FirstOrDefault());
                 if (cdc.IsSet)
                 {
                     IDPEndPoint endPoint = config.FindEndPoint(cdc.PreferredIDP);
@@ -255,3 +261,4 @@ namespace dk.nita.saml20.protocol
 
     }
 }
+

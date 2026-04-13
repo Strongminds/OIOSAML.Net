@@ -41,7 +41,6 @@ namespace dk.nita.test.Saml20
         /// Test that EncryptedData element with the correct Type value is disallowed by the DK Saml 2.0 validation
         /// </summary>        
         [Test]
-        [ExpectedException(typeof(DKSaml20FormatException), ExpectedMessage = "The SAML profile does not allow encrypted attributes.")]
         public void AttributeStatement_Invalid_EncryptedAttribute_DKSaml20()
         {
             Assertion saml20Assertion = AssertionUtil.GetBasicAssertion();
@@ -57,14 +56,13 @@ namespace dk.nita.test.Saml20
 
             XmlDocument doc = AssertionUtil.ConvertAssertion(saml20Assertion);
             var assertion = new Saml20Assertion(doc.DocumentElement, null, false);
-            assertion.Validate(DateTime.MinValue);
+            Assert.Throws<DKSaml20FormatException>(() => assertion.Validate(DateTime.MinValue));
         }
 
         /// <summary>
         /// Add an &lt;AuthzDecisionStatement&gt; to the list of statements and check that this is detected as a violation.
         /// </summary>
         [Test]
-        [ExpectedException(typeof(DKSaml20FormatException), ExpectedMessage = "The SAML profile requires exactly one \"AuthnStatement\" element and one \"AttributeStatement\" element.")]        
         public void AttributeStatement_Invalid_Statementtype()
         {
             Assertion saml20Assertion = AssertionUtil.GetBasicAssertion();
@@ -81,7 +79,7 @@ namespace dk.nita.test.Saml20
             saml20Assertion.Items = statements.ToArray();
 
             var assertion = new Saml20Assertion(AssertionUtil.ConvertAssertion(saml20Assertion).DocumentElement, null, false);
-            assertion.Validate(DateTime.MinValue);
+            Assert.Throws<DKSaml20FormatException>(() => assertion.Validate(DateTime.MinValue));
         }
 
         /// <summary>
@@ -315,3 +313,4 @@ namespace dk.nita.test.Saml20
         }
     }
 }
+

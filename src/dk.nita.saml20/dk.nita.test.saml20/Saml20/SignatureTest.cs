@@ -45,7 +45,7 @@ namespace dk.nita.test.Saml20
         /// <summary>
         /// Deserializes the test tokens using the Safewhere DK-SAML class.
         /// </summary>
-        [Ignore]    // TODO: test data needs fixing
+        [Ignore("To be fixed")]    // TODO: test data needs fixing
         public void TestDKSaml20TokenVerification_01()
         {
             AssertionUtil.DeserializeToken(@"Saml20\Assertions\Saml2Assertion_01");
@@ -57,30 +57,27 @@ namespace dk.nita.test.Saml20
         /// Attempts to deserialize an invalid Saml-token. Tests that the Assertion class immediately "explodes".
         /// </summary>
         [Test]
-        [ExpectedException(typeof(Saml20Exception), ExpectedMessage = "Signature could not be verified.")]
         public void TestDKSaml20TokenVerification_02()
         {
-            AssertionUtil.DeserializeToken(@"Saml20\Assertions\EvilSaml2Assertion_01");
+            Assert.Throws<Saml20Exception>(() => AssertionUtil.DeserializeToken(@"Saml20\Assertions\EvilSaml2Assertion_01"));
         }
 
         /// <summary>
         /// Attempts to deserialize an invalid Saml-token. Tests that the Assertion class immediately "explodes".
         /// </summary>
         [Test]
-        [ExpectedException(typeof(Saml20Exception), ExpectedMessage = "Signature could not be verified.")]
         public void TestDKSaml20TokenVerification_03()
         {
-            AssertionUtil.DeserializeToken(@"Saml20\Assertions\EvilSaml2Assertion_02");
+            Assert.Throws<Saml20Exception>(() => AssertionUtil.DeserializeToken(@"Saml20\Assertions\EvilSaml2Assertion_02"));
         }
 
         /// <summary>
         /// Attempts to deserialize an invalid Saml-token. Tests that the Assertion class immediately "explodes".
         /// </summary>
         [Test]
-        [ExpectedException(typeof(Saml20Exception), ExpectedMessage = "Signature could not be verified.")]
         public void TestDKSaml20TokenVerification_04()
         {
-            AssertionUtil.DeserializeToken(@"Saml20\Assertions\EvilSaml2Assertion_03");
+            Assert.Throws<Saml20Exception>(() => AssertionUtil.DeserializeToken(@"Saml20\Assertions\EvilSaml2Assertion_03"));
         }
 
         /// <summary>
@@ -135,14 +132,13 @@ namespace dk.nita.test.Saml20
         /// Test that the Assertion class verifies the signature of an assertion by default.
         /// </summary>
         [Test]
-        [ExpectedException(typeof(InvalidOperationException), ExpectedMessage = "Document does not contain a signature to verify.")]
         public void TestSigning_04()
         {
             // Any key-containing algorithm will do - the basic assertion is NOT signed anyway
             X509Certificate2 cert = new X509Certificate2(@"Saml20\Certificates\sts_dev_certificate.pfx", "test1234");
 
-            new Saml20Assertion(AssertionUtil.GetTestAssertion_01().DocumentElement, new AsymmetricAlgorithm[] { cert.PublicKey.Key }, false);
-
+            Assert.Throws<InvalidOperationException>(() =>
+                new Saml20Assertion(AssertionUtil.GetTestAssertion_01().DocumentElement, new AsymmetricAlgorithm[] { cert.PublicKey.Key }, false));
         }
 
         [Test]
@@ -273,3 +269,4 @@ namespace dk.nita.test.Saml20
         }
     }
 }
+

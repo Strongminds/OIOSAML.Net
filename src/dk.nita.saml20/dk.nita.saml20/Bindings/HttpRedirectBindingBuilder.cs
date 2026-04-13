@@ -1,10 +1,10 @@
 using System;
 using System.IO;
 using System.IO.Compression;
+using System.Net;
 using System.Security.Cryptography;
 using System.Security.Cryptography.Xml;
 using System.Text;
-using System.Web;
 using dk.nita.saml20.Bindings.SignatureProviders;
 using dk.nita.saml20.config;
 using CONSTS = dk.nita.saml20.Bindings.HttpRedirectBindingConstants;
@@ -77,9 +77,9 @@ namespace dk.nita.saml20.Bindings
         {
             set
             {
-                // Check if the key is of a supported type. [SAMLBind] sect. 3.4.4.1 specifies this.
-                if (!(value is RSACryptoServiceProvider || value == null))
-                    throw new ArgumentException("Signing key must be an instance of RSACryptoServiceProvider.");
+                // Accept any RSA implementation (RSACng, RSACryptoServiceProvider, etc.)
+                if (!(value is RSA || value == null))
+                    throw new ArgumentException("Signing key must be an instance of RSA.");
                 _signingKey = value;
             }
 
@@ -120,14 +120,14 @@ namespace dk.nita.saml20.Bindings
 
             var signingProvider = SignatureProviderFactory.CreateFromShaHashingAlgorithmName(ShaHashingAlgorithm);
 
-            result.Append(UpperCaseUrlEncode(HttpUtility.UrlEncode(signingProvider.SignatureUri)));
+            result.Append(UpperCaseUrlEncode(WebUtility.UrlEncode(signingProvider.SignatureUri)));
 
             // Calculate the signature of the URL as described in [SAMLBind] section 3.4.4.1.            
             byte[] signature = signingProvider.SignData(_signingKey, Encoding.UTF8.GetBytes(result.ToString()));
             //byte[] signature = SignData(Encoding.UTF8.GetBytes(result.ToString()));            
 
             result.AppendFormat("&{0}=", HttpRedirectBindingConstants.Signature);
-            result.Append(HttpUtility.UrlEncode(Convert.ToBase64String(signature)));
+            result.Append(WebUtility.UrlEncode(Convert.ToBase64String(signature)));
         }
 
         /// <summary>
@@ -159,7 +159,7 @@ namespace dk.nita.saml20.Bindings
             result.Append("&RelayState=");
             // Encode the relay state if we're building a request. Otherwise, append unmodified.
             if (_request != null)
-                result.Append(HttpUtility.UrlEncode(DEFLATEEncode(_relayState)));
+                result.Append(WebUtility.UrlEncode(DEFLATEEncode(_relayState)));
             else
                 result.Append(_relayState);
         }
@@ -184,7 +184,7 @@ namespace dk.nita.saml20.Bindings
                 value = _response;
             }
             string encoded = DEFLATEEncode(value);
-            result.Append(UpperCaseUrlEncode(HttpUtility.UrlEncode(encoded)));
+            result.Append(UpperCaseUrlEncode(WebUtility.UrlEncode(encoded)));
         }
 
         /// <summary>

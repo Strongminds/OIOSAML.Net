@@ -1,5 +1,9 @@
-﻿using System;
-using System.Web;
+using System;
+using System.IO;
+using System.IO.Compression;
+using System.Text;
+using System.Threading;
+using Microsoft.AspNetCore.Http;
 using dk.nita.saml20.config;
 using dk.nita.saml20.Utils;
 
@@ -41,34 +45,41 @@ namespace dk.nita.saml20.Session
 
         private static readonly ISessionStoreProvider SessionStoreProvider;
 
+        // Key used to cache a newly-written session ID in HttpContext.Items so it is available
+        // within the same request. Response.Cookies are not readable via Request.Cookies until
+        // the browser sends them on a subsequent request.
+        internal const string PendingSessionIdItemKey = "dk.nita.saml20.PendingSessionId";
+
+        // Prefix used to embed the session ID in the SAML RelayState so the session can be
+        // recovered on the POST-back even if the browser does not send the Secure session cookie
+        // (e.g. when browser SameSite policy blocks the cookie in a cross-site POST).
+        internal const string RelayStateSessionPrefix = "oiosaml-sid-";
+
+        // AsyncLocal fallback: carries the recovered session ID through the current async
+        // execution context when TryRecoverSessionFromRelayState runs. This works even when
+        // SamlHttpContextAccessor.Current is null or points to a different HttpContext object.
+        private static readonly AsyncLocal<Guid?> _relayStateRecoveredSessionId = new AsyncLocal<Guid?>();
+
         /// <summary>
-        /// There current user session. User session is read from cookie. If it doesn't exists, null is returned
+        /// The current user session. User session is read from cookie, HttpContext.Items, or the
+        /// AsyncLocal set by TryRecoverSessionFromRelayState. Returns null if none is found.
         /// </summary>
-        /// <returns></returns>
         internal static UserSession CurrentSession
         {
             get
             {
-                //If not in context of a web requests, there can't be a current session
-                if (HttpContext.Current != null)
-                {
-                    var sessionId = GetSessionIdFromCookie();
-
-                    if (sessionId.HasValue)
-                    {
-                        return new UserSession(SessionStoreProvider, sessionId.Value);
-                    }
-                }
-
+                var sessionId = GetSessionIdFromCookie();
+                if (sessionId.HasValue)
+                    return new UserSession(SessionStoreProvider, sessionId.Value);
                 return null;
             }
         }
 
         internal static void CreateSessionIfNotExists()
         {
-            if (HttpContext.Current == null)
+            if (SamlHttpContextAccessor.Current == null)
             {
-                throw new InvalidOperationException("A session cannot be created when running outside the context of a asp.net request");
+                throw new InvalidOperationException("A session cannot be created when running outside the context of an ASP.NET Core request");
             }
 
             var sessionId = GetSessionIdFromCookie();
@@ -82,7 +93,6 @@ namespace dk.nita.saml20.Session
         /// <summary>
         /// Associates the given userId with the current session id
         /// </summary>
-        /// <param name="userId"></param>
         internal static void AssociateUserIdWithCurrentSession(string userId)
         {
             if (userId == null) throw new ArgumentNullException(nameof(userId));
@@ -92,7 +102,6 @@ namespace dk.nita.saml20.Session
         /// <summary>
         /// Abandons all sessions associated with the given userId
         /// </summary>
-        /// <param name="userId"></param>
         internal static void AbandonAllSessions(string userId)
         {
             if (userId == null) throw new ArgumentNullException(nameof(userId));
@@ -101,37 +110,154 @@ namespace dk.nita.saml20.Session
 
         private static Guid? GetSessionIdFromCookie()
         {
-            HttpCookie httpCookie = HttpContext.Current.Request.Cookies[GetSessionCookieName()];
-            if (httpCookie != null)
-                return new Guid(httpCookie.Value);
+            // 1. AsyncLocal override — set by TryRecoverSessionFromRelayState when the browser's
+            //    SameSite policy blocks the session cookie in a cross-site POST-back from the IdP.
+            //    This works even when SamlHttpContextAccessor.Current is null or mismatched.
+            var asyncLocal = _relayStateRecoveredSessionId.Value;
+            if (asyncLocal.HasValue)
+            {
+                return asyncLocal;
+            }
+
+            var context = SamlHttpContextAccessor.Current;
+            if (context == null)
+            {
+                return null;
+            }
+
+            // 2. HttpContext.Items — set by WriteSessionCookie() within the same request so the
+            //    newly-written cookie is visible before the browser sends it back.
+            if (context.Items.TryGetValue(PendingSessionIdItemKey, out var pending) && pending is Guid pendingId)
+            {
+                return pendingId;
+            }
+
+            // 3. Cookie sent by the browser on subsequent requests.
+            string cookieValue = context.Request.Cookies[GetSessionCookieName()];
+            if (cookieValue != null)
+                return new Guid(cookieValue);
 
             return null;
         }
 
+        /// <summary>
+        /// Re-writes the current session ID as a cookie in the ongoing response.
+        /// Call this after processing an IdP POST-back (where the browser cannot send the session
+        /// cookie due to cross-site SameSite restrictions) so the subsequent same-site GET redirect
+        /// (e.g. /SSO) will carry the session cookie.
+        /// </summary>
+        internal static void RefreshSessionCookie()
+        {
+            var context = SamlHttpContextAccessor.Current;
+            if (context == null || context.Response.HasStarted) return;
+
+            var session = CurrentSession;
+            if (session == null) return;
+
+            if (!context.Request.IsHttps) return;
+
+            var cookieName = GetSessionCookieName();
+            var cookieOptions = new CookieOptions { Secure = true, HttpOnly = true };
+
+            if (BrowserSupportUtil.ShouldSendSameSiteNone(context.Request.Headers.UserAgent.ToString()))
+                cookieOptions.SameSite = SameSiteMode.None;
+
+            context.Response.Cookies.Append(cookieName, session.SessionId.ToString(), cookieOptions);
+            // Also update Items so CurrentSession finds the ID within this same request
+            context.Items[PendingSessionIdItemKey] = session.SessionId;
+        }
+
         private static void WriteSessionCookie()
         {
-            if (!HttpContext.Current.Request.IsSecureConnection)
+            if (!SamlHttpContextAccessor.Current.Request.IsHttps)
             {
                 throw new Saml20Exception("The service provider must use https since session cookie is not allowed on a unsecure transport");
             }
 
             var sessionId = Guid.NewGuid();
+            var cookieName = GetSessionCookieName();
 
-            HttpContext.Current.Request.Cookies.Remove(GetSessionCookieName()); // Remove cookie from request when creating a new session id. This is necessary because adding a cookie with the same name does not override cookies in the request.
-
-            var httpCookie = new HttpCookie(GetSessionCookieName(), sessionId.ToString())
+            var cookieOptions = new CookieOptions
             {
                 Secure = true,
                 HttpOnly = true,
             };
 
-            var shouldSendSameSiteNoneCookie = BrowserSupportUtil.ShouldSendSameSiteNone(HttpContext.Current.Request.UserAgent);
+            var shouldSendSameSiteNoneCookie = BrowserSupportUtil.ShouldSendSameSiteNone(SamlHttpContextAccessor.Current.Request.Headers.UserAgent.ToString());
             if (shouldSendSameSiteNoneCookie)
             {
-                httpCookie.SameSite = SameSiteMode.None;
+                cookieOptions.SameSite = SameSiteMode.None;
             }
 
-            HttpContext.Current.Response.Cookies.Add(httpCookie); // When a cookie is added to the response it is automatically added to the request. Thus, SessionId is available immeditly when reading cookies from the request.
+            SamlHttpContextAccessor.Current.Response.Cookies.Append(cookieName, sessionId.ToString(), cookieOptions);
+
+            // Also store the session ID in HttpContext.Items so CurrentSession can find it
+            // within the same request before the browser echoes the cookie back.
+            SamlHttpContextAccessor.Current.Items[PendingSessionIdItemKey] = sessionId;
+        }
+
+        /// <summary>
+        /// Builds a RelayState value that embeds the current session ID so the session can be
+        /// recovered on the POST-back even when the browser does not send the session cookie.
+        /// Returns null when there is no active session.
+        /// </summary>
+        internal static string BuildRelayState()
+        {
+            var session = CurrentSession;
+            return session != null ? RelayStateSessionPrefix + session.SessionId.ToString("D") : null;
+        }
+
+        /// <summary>
+        /// If <paramref name="relayState"/> contains our embedded session prefix (either as plain
+        /// text or DEFLATE+base64-encoded as produced by HttpRedirectBindingBuilder for requests),
+        /// injects the recovered session ID into the AsyncLocal and HttpContext.Items so
+        /// <see cref="CurrentSession"/> can find it even if the browser session cookie was blocked.
+        /// </summary>
+        internal static void TryRecoverSessionFromRelayState(string relayState)
+        {
+            if (string.IsNullOrEmpty(relayState)) return;
+
+            // HttpRedirectBindingBuilder DEFLATE-compresses and base64-encodes the RelayState
+            // value before embedding it in the AuthnRequest URL.  The IdP echoes the encoded
+            // blob back unchanged in the POST form field, so we must decode it first.
+            var decoded = TryDecodeRelayState(relayState);
+            if (!decoded.StartsWith(RelayStateSessionPrefix, StringComparison.Ordinal)) return;
+
+            var sessionIdStr = decoded.Substring(RelayStateSessionPrefix.Length);
+            if (Guid.TryParse(sessionIdStr, out var sessionId))
+            {
+                // Primary: AsyncLocal — works even if SamlHttpContextAccessor.Current is null.
+                _relayStateRecoveredSessionId.Value = sessionId;
+
+                // Belt-and-suspenders: also set via IHttpContextAccessor if available.
+                if (SamlHttpContextAccessor.Current != null)
+                    SamlHttpContextAccessor.Current.Items[PendingSessionIdItemKey] = sessionId;
+            }
+        }
+
+        /// <summary>
+        /// Returns the plain-text relay state value.  HttpRedirectBindingBuilder encodes relay
+        /// state with DEFLATE + base64 for requests; this reverses that encoding when present.
+        /// </summary>
+        private static string TryDecodeRelayState(string relayState)
+        {
+            // Already plain text — nothing to decode.
+            if (relayState.StartsWith(RelayStateSessionPrefix, StringComparison.Ordinal))
+                return relayState;
+
+            try
+            {
+                var compressed = Convert.FromBase64String(relayState);
+                using var input = new MemoryStream(compressed);
+                using var deflate = new DeflateStream(input, CompressionMode.Decompress);
+                using var reader = new StreamReader(deflate, Encoding.UTF8);
+                return reader.ReadToEnd();
+            }
+            catch
+            {
+                // Not base64+deflate encoded — return original.
+                return relayState;
+            }
         }
 
         private static string GetSessionCookieName()
@@ -140,7 +266,7 @@ namespace dk.nita.saml20.Session
 
             if (string.IsNullOrWhiteSpace(name))
             {
-                throw new Saml20Exception($"The session cookie name '{name}' is not valid. Ensure a valid cookie name is set in the configuration element 'SessionCookieName'");
+                throw new Saml20Exception($"The session cookie name ''{name}'' is not valid. Ensure a valid cookie name is set in the configuration element ''SessionCookieName''");
             }
 
             return name;
@@ -149,7 +275,6 @@ namespace dk.nita.saml20.Session
         /// <summary>
         /// Asserts that the user has a session.
         /// </summary>
-        /// <exception cref="Saml20Exception">Is thrown if no session exists.</exception>
         internal static void AssertSessionExists()
         {
             if (!DoesSessionExists())
@@ -157,27 +282,32 @@ namespace dk.nita.saml20.Session
                 if (CurrentSession == null)
                 {
                     throw new Saml20Exception(
-                        "The user doesn't have a session in context of a cookie ... which is required at this point in the pipeline. Plausible reason is that OIOSAML.Net is not running under https. The session cookie is marked with 'secure only'.");
+                        "The user doesn''t have a session in context of a cookie ... which is required at this point in the pipeline. Plausible reason is that OIOSAML.Net is not running under https. The session cookie is marked with ''secure only''.");
                 }
                 else if (!SessionStoreProvider.DoesSessionExists(CurrentSession.SessionId))
                 {
                     throw new Saml20Exception(
-                        "The user doesn't have a session in session store which is required at this point in the pipeline. Plausible reason is that the user's session has expired. \nIf the application is running in a web farm ensure distributed sessions is supported by the session store provider.");
+                        "The user doesn''t have a session in session store which is required at this point in the pipeline. Plausible reason is that the user''s session has expired. \nIf the application is running in a web farm ensure distributed sessions is supported by the session store provider.");
                 }
                 else
                 {
-                    throw new Saml20Exception("The user doesn't have a session for unknown reasons.");
+                    throw new Saml20Exception("The user doesn''t have a session for unknown reasons.");
                 }
             }
         }
 
         /// <summary>
-        /// Checks whether or not the user has a session
-        /// SamlAssertionLite is the only item in the session store after a succesful login flow. This is what implicit makes the session exist.
+        /// Checks whether or not the user has a session.
+        /// SamlAssertionLite is the only item in the session store after a successful login flow.
         /// </summary>
         internal static bool DoesSessionExists()
         {
-            return CurrentSession != null && SessionStoreProvider.DoesSessionExists(CurrentSession.SessionId);
+            var session = CurrentSession;
+            if (session == null)
+            {
+                return false;
+            }
+            return SessionStoreProvider.DoesSessionExists(session.SessionId);
         }
     }
 }

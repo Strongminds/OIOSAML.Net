@@ -7,15 +7,14 @@ namespace dk.nita.saml20.Bindings.SignatureProviders
     {
         public override string SignatureUri => SignedXml.XmlDsigRSASHA256Url;
         public override string DigestUri => SignedXml.XmlDsigSHA256Url;
-        protected override byte[] SignDataIntern(RSACryptoServiceProvider key, byte[] data)
+        protected override byte[] SignDataIntern(RSA key, byte[] data)
         {
-            return key.SignData(data, new SHA256CryptoServiceProvider());
+            return key.SignData(data, HashAlgorithmName.SHA256, RSASignaturePadding.Pkcs1);
         }
 
-        protected override bool VerifySignatureIntern(RSACryptoServiceProvider key, byte[] data, byte[] signature)
+        protected override bool VerifySignatureIntern(RSA key, byte[] data, byte[] signature)
         {
-            var hash = new SHA256Managed().ComputeHash(data);
-            return ((RSACryptoServiceProvider)key).VerifyHash(hash, "SHA256", signature);
+            return key.VerifyData(data, signature, HashAlgorithmName.SHA256, RSASignaturePadding.Pkcs1);
         }
     }
 }

@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using dk.nita.saml20.Utils;
 using NUnit.Framework;
 
@@ -52,7 +52,6 @@ namespace dk.nita.test.Saml20
         }
 
         [Test]
-        [ExpectedException(typeof(ArgumentException))]
         public void CreateError1()
         {
             Int16 typeCode = 4;
@@ -60,11 +59,10 @@ namespace dk.nita.test.Saml20
             byte[] sourceIdHash = new byte[19];
             byte[] messageHandle = new byte[20];
 
-            ArtifactUtil.CreateArtifact(typeCode, endpointIndex, sourceIdHash, messageHandle);
+            Assert.Throws<ArgumentException>(() => ArtifactUtil.CreateArtifact(typeCode, endpointIndex, sourceIdHash, messageHandle));
         }
 
         [Test]
-        [ExpectedException(typeof(ArgumentException))]
         public void CreateError2()
         {
             Int16 typeCode = 4;
@@ -72,11 +70,10 @@ namespace dk.nita.test.Saml20
             byte[] sourceIdHash = new byte[20];
             byte[] messageHandle = new byte[19];
 
-            ArtifactUtil.CreateArtifact(typeCode, endpointIndex, sourceIdHash, messageHandle);
+            Assert.Throws<ArgumentException>(() => ArtifactUtil.CreateArtifact(typeCode, endpointIndex, sourceIdHash, messageHandle));
         }
 
         [Test]
-        [ExpectedException(typeof(ArgumentException))]
         public void ParseError1()
         {
             Int16 parsedTypeCode = -1;
@@ -85,12 +82,17 @@ namespace dk.nita.test.Saml20
             byte[] parsedMessageHandle = new byte[20];
             string artifact = string.Empty;
 
-            ArtifactUtil.ParseArtifact(artifact, ref parsedTypeCode, ref parsedEndpointIndex, ref parsedSourceIdHash, ref parsedMessageHandle);
-
+            Assert.Throws<ArgumentException>(() =>
+            {
+                Int16 tc = parsedTypeCode;
+                Int16 ei = parsedEndpointIndex;
+                byte[] sih = parsedSourceIdHash;
+                byte[] mh = parsedMessageHandle;
+                ArtifactUtil.ParseArtifact(artifact, ref tc, ref ei, ref sih, ref mh);
+            });
         }
 
         [Test]
-        [ExpectedException(typeof(ArgumentException))]
         public void ParseError2()
         {
             Int16 parsedTypeCode = -1;
@@ -98,11 +100,18 @@ namespace dk.nita.test.Saml20
             byte[] parsedSourceIdHash = new byte[20];
             byte[] parsedMessageHandle = new byte[19];
             string artifact = string.Empty;
-            ArtifactUtil.ParseArtifact(artifact, ref parsedTypeCode, ref parsedEndpointIndex, ref parsedSourceIdHash, ref parsedMessageHandle);
+
+            Assert.Throws<ArgumentException>(() =>
+            {
+                Int16 tc = parsedTypeCode;
+                Int16 ei = parsedEndpointIndex;
+                byte[] sih = parsedSourceIdHash;
+                byte[] mh = parsedMessageHandle;
+                ArtifactUtil.ParseArtifact(artifact, ref tc, ref ei, ref sih, ref mh);
+            });
         }
 
         [Test]
-        [ExpectedException(typeof(ArgumentException))]
         public void ParseError3()
         {
             Int16 parsedTypeCode = -1;
@@ -110,8 +119,15 @@ namespace dk.nita.test.Saml20
             byte[] parsedSourceIdHash = new byte[20];
             byte[] parsedMessageHandle = new byte[20];
             string artifact = string.Empty;
-            ArtifactUtil.ParseArtifact(artifact, ref parsedTypeCode, ref parsedEndpointIndex, ref parsedSourceIdHash, ref parsedMessageHandle);
 
+            Assert.Throws<ArgumentException>(() =>
+            {
+                Int16 tc = parsedTypeCode;
+                Int16 ei = parsedEndpointIndex;
+                byte[] sih = parsedSourceIdHash;
+                byte[] mh = parsedMessageHandle;
+                ArtifactUtil.ParseArtifact(artifact, ref tc, ref ei, ref sih, ref mh);
+            });
         }
 
         [Test]

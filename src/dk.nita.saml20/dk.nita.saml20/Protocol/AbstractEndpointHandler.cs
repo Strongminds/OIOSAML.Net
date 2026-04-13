@@ -4,10 +4,9 @@ using System.Linq;
 using System.Net;
 using System.Text;
 using System.Threading;
-using System.Web;
+using Microsoft.AspNetCore.Http;
 using dk.nita.saml20.session;
 using dk.nita.saml20.config;
-using System.Web.SessionState;
 using System.Xml;
 using dk.nita.saml20.Logging;
 using dk.nita.saml20.protocol.pages;
@@ -20,27 +19,13 @@ namespace dk.nita.saml20.protocol
     /// <summary>
     /// A base class for all endpoint handlers.
     /// </summary>
-    public abstract class AbstractEndpointHandler : IHttpHandler, IRequiresSessionState
+    public abstract class AbstractEndpointHandler
     {
-        #region IHttpHandler Members
-
         /// <summary>
-        /// Enables processing of HTTP Web requests by a custom HttpHandler that implements the <see cref="T:System.Web.IHttpHandler"/> interface.
+        /// Enables processing of HTTP Web requests.
         /// </summary>
-        /// <param name="context">An <see cref="T:System.Web.HttpContext"/> object that provides references to the intrinsic server objects (for example, Request, Response, Session, and Server) used to service HTTP requests.</param>
+        /// <param name="context">The current HTTP context.</param>
         public abstract void ProcessRequest(HttpContext context);
-
-        /// <summary>
-        /// Gets a value indicating whether another request can use the <see cref="T:System.Web.IHttpHandler"/> instance.
-        /// </summary>
-        /// <value></value>
-        /// <returns>true if the <see cref="T:System.Web.IHttpHandler"/> instance is reusable; otherwise, false.</returns>
-        public bool IsReusable
-        {
-            get { return true; }
-        }
-
-        #endregion
 
         /// <summary>
         /// Displays an error page.
@@ -67,7 +52,6 @@ namespace dk.nita.saml20.protocol
                 page.OverrideConfig = overrideConfigSetting;
                 page.ErrorText = showError ? errorMessage?.Replace("\n", "<br />") : defaultMessage;
                 page.ProcessRequest(context);
-                context.Response.End();
             }
         }
 

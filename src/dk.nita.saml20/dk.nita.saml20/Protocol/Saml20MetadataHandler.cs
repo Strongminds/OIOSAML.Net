@@ -1,7 +1,7 @@
 using System;
 using System.Security.Cryptography.X509Certificates;
 using System.Text;
-using System.Web;
+using Microsoft.AspNetCore.Http;
 using dk.nita.saml20.config;
 using Saml2.Properties;
 using System.Security.Cryptography.Xml;
@@ -18,19 +18,17 @@ namespace dk.nita.saml20.protocol
     /// </summary>
     public class Saml20MetadataHandler : AbstractEndpointHandler
     {
-        #region IHttpHandler Members
-
         /// <summary>
-        /// Enables processing of HTTP Web requests by a custom HttpHandler that implements the <see cref="T:System.Web.IHttpHandler"/> interface.
+        /// Handles the HTTP request.
         /// </summary>
-        /// <param name="context">An <see cref="T:System.Web.HttpContext"/> object that provides references to the intrinsic server objects (for example, Request, Response, Session, and Server) used to service HTTP requests.</param>
         public override void ProcessRequest(HttpContext context)
         {
-            var encoding = context.Request.QueryString["encoding"];
+            var responseEncoding = Encoding.UTF8;
+            var encoding = context.Request.Query["encoding"].ToString();
             try
             {
                 if (!string.IsNullOrEmpty(encoding))
-                    context.Response.ContentEncoding = Encoding.GetEncoding(encoding);
+                    responseEncoding = Encoding.GetEncoding(encoding);
             }
             catch (ArgumentException)
             {
@@ -41,42 +39,28 @@ namespace dk.nita.saml20.protocol
             var sign = false;
             try
             {
-                string param = context.Request.QueryString["sign"];                
+                string param = context.Request.Query["sign"].ToString();
                 if (!string.IsNullOrEmpty(param))
                     sign = Convert.ToBoolean(param);
-            } catch(FormatException)
+            }
+            catch (FormatException)
             {
                 HandleError(context, Resources.GenericError);
                 return;
             }
-                        
+
             context.Response.ContentType = Saml20Constants.METADATA_MIMETYPE;
-            context.Response.AddHeader("Content-Disposition", "attachment; filename=\"metadata.xml\"");
+            context.Response.Headers["Content-Disposition"] = "attachment; filename=\"metadata.xml\"";
 
-            CreateMetadataDocument(context, sign);
-            
-            context.Response.End();            
+            CreateMetadataDocument(context, sign, responseEncoding);
         }
 
-        /// <summary>
-        /// Gets a value indicating whether this instance is reusable.
-        /// </summary>
-        /// <value>
-        /// 	<c>true</c> if this instance is reusable; otherwise, <c>false</c>.
-        /// </value>
-        public new bool IsReusable
-        {
-            get { return false; }
-        }
-
-        #endregion
-
-        private void CreateMetadataDocument(HttpContext context, bool sign)
+        private void CreateMetadataDocument(HttpContext context, bool sign, Encoding responseEncoding)
         {
             SAML20FederationConfig configuration = SAML20FederationConfig.GetConfig();
 
             var keyinfos = new List<KeyInfo>();
-            foreach(Certificate certificate in FederationConfig.GetConfig().SigningCertificates)
+            foreach (Certificate certificate in FederationConfig.GetConfig().SigningCertificates)
             {
                 KeyInfo keyinfo = new KeyInfo();
                 KeyInfoX509Data keyClause = new KeyInfoX509Data(certificate.GetCertificate(), X509IncludeOption.EndCertOnly);
@@ -86,7 +70,7 @@ namespace dk.nita.saml20.protocol
 
             Saml20MetadataDocument doc = new Saml20MetadataDocument(configuration, keyinfos, sign);
 
-            context.Response.Write(doc.ToXml( context.Response.ContentEncoding ));
+            context.Response.WriteAsync(doc.ToXml(responseEncoding)).GetAwaiter().GetResult();
         }
     }
 }

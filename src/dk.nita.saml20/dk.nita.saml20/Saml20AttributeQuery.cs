@@ -1,9 +1,10 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Security.Cryptography;
-using System.Web;
+using System.Security.Cryptography.X509Certificates;
+using Microsoft.AspNetCore.Http;
 using System.Xml;
 using dk.nita.saml20.Bindings;
 using dk.nita.saml20.Bindings.SignatureProviders;
@@ -220,7 +221,7 @@ namespace dk.nita.saml20
             {
                 Saml20EncryptedAssertion ass =
                     new Saml20EncryptedAssertion(
-                        (RSA)FederationConfig.GetConfig().GetFirstValidCertificate().PrivateKey);
+                        (RSA)FederationConfig.GetConfig().GetFirstValidCertificate().GetRSAPrivateKey());
                 ass.LoadXml(xmlAssertion);
                 ass.Decrypt();
                 xmlAssertion = ass.Assertion.DocumentElement;

@@ -1,8 +1,9 @@
 ﻿using System;
 using System.Diagnostics;
 using System.IO;
-using System.Web;
-using System.Web.Caching;
+using System.Net;
+using System.Net.WebSockets;
+using Microsoft.AspNetCore.Http;
 using System.Xml;
 using dk.nita.saml20.Bindings.SignatureProviders;
 using dk.nita.saml20.config;
@@ -115,10 +116,10 @@ namespace dk.nita.saml20.Bindings
 
             string artifact = ArtifactUtil.CreateArtifact(HttpArtifactBindingConstants.ArtifactTypeCode, localEndpointIndex, sourceIdHash, messageHandle);
 
-            _context.Cache.Insert(artifact, signedSamlMessage, null, DateTime.Now.AddMinutes(1), Cache.NoSlidingExpiration);
+            SamlMemoryCache.Insert(artifact, signedSamlMessage, DateTime.Now.AddMinutes(1));
 
             string destinationUrl = destination.Url + "?" + HttpArtifactBindingConstants.ArtifactQueryStringName + "=" +
-                                    HttpUtility.UrlEncode(artifact);
+                                    WebUtility.UrlEncode(artifact);
             if (!string.IsNullOrEmpty(relayState))
             {
                 destinationUrl += "&relayState=" + relayState;
@@ -140,7 +141,7 @@ namespace dk.nita.saml20.Bindings
         /// <param name="signedSamlMessage">The signed saml message.</param>
         private void ArtifactRedirect(IDPEndPointElement destination, Int16 localEndpointIndex, XmlDocument signedSamlMessage)
         {
-            ArtifactRedirect(destination, localEndpointIndex, signedSamlMessage, _context.Request.Params["relayState"]);
+            ArtifactRedirect(destination, localEndpointIndex, signedSamlMessage, _context.GetRequestParam("relayState"));
         }
 
         /// <summary>
@@ -150,7 +151,7 @@ namespace dk.nita.saml20.Bindings
         /// <param name="artifactResolve">The artifact resolve message.</param>
         public void RespondToArtifactResolve(IDPEndPoint idpEndPoint, ArtifactResolve artifactResolve)
         {
-            XmlDocument samlDoc = (XmlDocument)_context.Cache.Get(artifactResolve.Artifact);
+            XmlDocument samlDoc = (XmlDocument)SamlMemoryCache.Get(artifactResolve.Artifact);
             
             Saml20ArtifactResponse response = Saml20ArtifactResponse.GetDefault();
             response.StatusCode = Saml20Constants.StatusCodes.Success;
@@ -182,7 +183,7 @@ namespace dk.nita.saml20.Bindings
         {
             Trace.TraceMethodCalled(GetType(), "ResolveArtifact()");
 
-            string artifact = _context.Request.Params["SAMLart"];
+            string artifact = _context.GetRequestParam("SAMLart");
 
             IDPEndPoint idpEndPoint = DetermineIdp(artifact);
 

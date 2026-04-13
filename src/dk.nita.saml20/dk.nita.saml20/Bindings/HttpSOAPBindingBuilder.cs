@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.IO;
 using System.Net;
 using System.Net.Mime;
@@ -7,9 +7,10 @@ using System.Security.Cryptography.X509Certificates;
 using System.ServiceModel;
 using System.ServiceModel.Channels;
 using System.Text;
-using System.Web;
+using Microsoft.AspNetCore.Http;
 using System.Xml;
 using dk.nita.saml20.config;
+using dk.nita.saml20.Utils;
 
 namespace dk.nita.saml20.Bindings
 {
@@ -26,7 +27,6 @@ namespace dk.nita.saml20.Bindings
         /// <summary>
         /// Initializes a new instance of the <see cref="HttpSOAPBindingBuilder"/> class.
         /// </summary>
-        /// <param name="context">The current HTTP context.</param>
         public HttpSOAPBindingBuilder(HttpContext context)
         {
             _context = context;
@@ -35,22 +35,18 @@ namespace dk.nita.saml20.Bindings
         /// <summary>
         /// Sends a response message.
         /// </summary>
-        /// <param name="samlMessage">The saml message.</param>
         public void SendResponseMessage(string samlMessage)
         {
             _context.Response.ContentType = "text/xml";
-            StreamWriter writer = new StreamWriter(_context.Response.OutputStream);
+            StreamWriter writer = new StreamWriter(_context.Response.Body);
             writer.Write(WrapInSoapEnvelope(samlMessage));
             writer.Flush();
             writer.Close();
-            _context.Response.End();
         }
 
         /// <summary>
         /// Wraps a message in a SOAP envelope.
         /// </summary>
-        /// <param name="s">The s.</param>
-        /// <returns></returns>
         public string WrapInSoapEnvelope(string s)
         {
             StringBuilder builder = new StringBuilder();
@@ -66,11 +62,6 @@ namespace dk.nita.saml20.Bindings
         /// <summary>
         /// Validates the server certificate.
         /// </summary>
-        /// <param name="sender">The sender.</param>
-        /// <param name="certificate">The certificate.</param>
-        /// <param name="chain">The chain.</param>
-        /// <param name="sslPolicyErrors">The SSL policy errors.</param>
-        /// <returns>True if validation of the server certificate generates no policy errors</returns>
         public static bool ValidateServerCertificate(object sender, X509Certificate certificate, X509Chain chain, SslPolicyErrors sslPolicyErrors)
         {
             if (sslPolicyErrors == SslPolicyErrors.None)
@@ -78,10 +69,6 @@ namespace dk.nita.saml20.Bindings
             return false;
         }
 
-        /// <summary>
-        /// Creates a WCF SSL binding.
-        /// </summary>
-        /// <returns></returns>
         private static Binding CreateSslBinding()
         {
             BasicHttpBinding binding = new BasicHttpBinding(BasicHttpSecurityMode.Transport);
@@ -92,10 +79,6 @@ namespace dk.nita.saml20.Bindings
         /// <summary>
         /// Gets a response from the IdP based on a message.
         /// </summary>
-        /// <param name="endpoint">The IdP endpoint.</param>
-        /// <param name="message">The message.</param>
-        /// <param name="basicAuth">Basic auth settings.</param>
-        /// <returns></returns>
         public Stream GetResponse(string endpoint, string message, HttpBasicAuthElement basicAuth)
         {
             Binding binding = CreateSslBinding();
@@ -107,7 +90,6 @@ namespace dk.nita.saml20.Bindings
             property.Method = "POST";
             property.Headers.Add(HttpRequestHeader.ContentType, "text/xml; charset=utf-8");
 
-            //We are using Basic http auth over ssl
             if (basicAuth != null && basicAuth.Enabled)
             {
                 string basicAuthzHeader = "Basic " +
@@ -116,8 +98,9 @@ namespace dk.nita.saml20.Bindings
             }
 
             request.Properties.Add(HttpRequestMessageProperty.Name, property);
-            if (_context.Request.Params["relayState"] != null)
-                request.Properties.Add("relayState", _context.Request.Params["relayState"]);
+            string relayState = _context.GetRequestParam("relayState");
+            if (relayState != null)
+                request.Properties.Add("relayState", relayState);
 
             EndpointAddress epa = new EndpointAddress(endpoint);
 
@@ -135,7 +118,6 @@ namespace dk.nita.saml20.Bindings
             string outerXml = xDoc.DocumentElement.OuterXml;
             MemoryStream memStream = new MemoryStream(Encoding.UTF8.GetBytes(outerXml));
             return memStream;
-
         }
     }
 
