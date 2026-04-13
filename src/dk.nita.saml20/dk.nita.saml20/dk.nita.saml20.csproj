@@ -5,7 +5,7 @@
     <PackageId>kitos.dk.nita.saml20</PackageId>
     <RootNamespace>dk.nita.saml20</RootNamespace>
     <LangVersion>8</LangVersion>
-    <Version>1.1.9</Version>
+    <Version>1.1.10</Version>
     <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
     <Nullable>disable</Nullable>
   </PropertyGroup>
